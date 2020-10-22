@@ -38,21 +38,14 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * A synchronization aid that allows a set of threads to all wait for
- * each other to reach a common barrier point.  CyclicBarriers are
- * useful in programs involving a fixed sized party of threads that
- * must occasionally wait for each other. The barrier is called
- * <em>cyclic</em> because it can be re-used after the waiting threads
- * are released.
+ * 一种同步辅助工具，允许一组线程彼此等待到达一个共同的障碍点。
+ * cyclicbarrier在包含固定大小的线程的程序中非常有用，这些线程有时必须彼此等待。
+ * 这个屏障被称为循环屏障，因为它可以在等待的线程被释放后重新使用。
  *
- * <p>A {@code CyclicBarrier} supports an optional {@link Runnable} command
- * that is run once per barrier point, after the last thread in the party
- * arrives, but before any threads are released.
- * This <em>barrier action</em> is useful
- * for updating shared-state before any of the parties continue.
+ * <p>CyclicBarrier支持一个可选的Runnable命令，该命令在每一个屏障点上运行一次，
+ * 在最后一个线程到达之后，但是在释放任何线程之前。这个屏障动作对于在任何一方继续之前更新共享状态非常有用。
  *
- * <p><b>Sample usage:</b> Here is an example of using a barrier in a
- * parallel decomposition design:
+ * <p>下面是一个在并行分解设计中使用屏障的例子:
  *
  *  <pre> {@code
  * class Solver {
@@ -98,34 +91,24 @@ import java.util.concurrent.locks.ReentrantLock;
  *   }
  * }}</pre>
  *
- * Here, each worker thread processes a row of the matrix then waits at the
- * barrier until all rows have been processed. When all rows are processed
- * the supplied {@link Runnable} barrier action is executed and merges the
- * rows. If the merger
- * determines that a solution has been found then {@code done()} will return
- * {@code true} and each worker will terminate.
+ * 在这里，每个工作线程处理矩阵的一行，然后在屏障处等待，直到处理完所有行。
+ * 在处理所有行时，执行所提供的Runnable barrier操作并合并行。如果合并确定找到了解决方案，
+ * 那么done()将返回true，每个worker将终止。
  *
- * <p>If the barrier action does not rely on the parties being suspended when
- * it is executed, then any of the threads in the party could execute that
- * action when it is released. To facilitate this, each invocation of
- * {@link #await} returns the arrival index of that thread at the barrier.
- * You can then choose which thread should execute the barrier action, for
- * example:
+ * <p>如果barrier操作在执行时不依赖于被挂起的参与方，
+ * 那么参与方中的任何线程都可以在释放该操作时执行该操作。
+ * 为了促进这一点，每次调用await()都会返回该线程在屏障处的到达索引。
+ * 然后你可以选择哪个线程应该执行屏障行动，例如:
  *  <pre> {@code
  * if (barrier.await() == 0) {
  *   // log the completion of this iteration
  * }}</pre>
  *
- * <p>The {@code CyclicBarrier} uses an all-or-none breakage model
- * for failed synchronization attempts: If a thread leaves a barrier
- * point prematurely because of interruption, failure, or timeout, all
- * other threads waiting at that barrier point will also leave
- * abnormally via {@link BrokenBarrierException} (or
- * {@link InterruptedException} if they too were interrupted at about
- * the same time).
+ * <p>CyclicBarrier使用一个动静极限的破碎模型同步尝试失败:如果一个线程离开障碍点过早中断,失败,或超时,
+ * 所有其他线程等待障碍点也将离开异常通过BrokenBarrierException
+ * (或InterruptedException如果他们也被打断了大约在同一时间)。
  *
- * <p>Memory consistency effects: Actions in a thread prior to calling
- * {@code await()}
+ * <p>内存一致性效应:在调用await()之前的线程中的操作，这些操作是barrier操作的一部分，而barrier操作又是在其他线程中相应的await()成功返回之后的before操作。
  * <a href="package-summary.html#MemoryVisibility"><i>happen-before</i></a>
  * actions that are part of the barrier action, which in turn
  * <i>happen-before</i> actions following a successful return from the
@@ -138,23 +121,15 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class CyclicBarrier {
     /**
-     * Each use of the barrier is represented as a generation instance.
-     * The generation changes whenever the barrier is tripped, or
-     * is reset. There can be many generations associated with threads
-     * using the barrier - due to the non-deterministic way the lock
-     * may be allocated to waiting threads - but only one of these
-     * can be active at a time (the one to which {@code count} applies)
-     * and all the rest are either broken or tripped.
-     * There need not be an active generation if there has been a break
-     * but no subsequent reset.
+     * 屏障的每次使用都表示为一个生成实例。无论何时触发屏障或重置屏障，都会更改生成。可以有许多代与线程相关的使用障碍,由于不确定的方式锁可能被分配到等待线程,但一次只能激活一个(一个{@code数}适用)和所有其他的破碎或绊倒。如果已经中断但没有后续重置，则不需要活动生成。
      */
     private static class Generation {
         boolean broken = false;
     }
 
-    /** The lock for guarding barrier entry */
+    /** 可重入锁 */
     private final ReentrantLock lock = new ReentrantLock();
-    /** Condition to wait on until tripped */
+    /** 条件锁等待 */
     private final Condition trip = lock.newCondition();
     /** The number of parties */
     private final int parties;
@@ -164,15 +139,12 @@ public class CyclicBarrier {
     private Generation generation = new Generation();
 
     /**
-     * Number of parties still waiting. Counts down from parties to 0
-     * on each generation.  It is reset to parties on each new
-     * generation or when broken.
+     * 许多人仍在等待。每代从聚会数到0。它被重置到每一个新一代的政党或当打破。
      */
     private int count;
 
     /**
-     * Updates state on barrier trip and wakes up everyone.
-     * Called only while holding lock.
+     * 更新状态并唤醒所有线程
      */
     private void nextGeneration() {
         // signal completion of last generation
@@ -183,8 +155,7 @@ public class CyclicBarrier {
     }
 
     /**
-     * Sets current barrier generation as broken and wakes up everyone.
-     * Called only while holding lock.
+     * 将当前的屏障生成设置为被打破，并唤醒所有人。只有在持有锁时才调用。
      */
     private void breakBarrier() {
         generation.broken = true;
@@ -193,33 +164,35 @@ public class CyclicBarrier {
     }
 
     /**
-     * Main barrier code, covering the various policies.
+     * 主要屏障代码，涵盖各种政策。
      */
     private int dowait(boolean timed, long nanos)
         throws InterruptedException, BrokenBarrierException,
                TimeoutException {
+        // 拿到可重入锁
         final ReentrantLock lock = this.lock;
+        // 锁上
         lock.lock();
         try {
             final Generation g = generation;
 
-            if (g.broken)
+            if (g.broken) // 若阻塞了，抛异常
                 throw new BrokenBarrierException();
 
-            if (Thread.interrupted()) {
+            if (Thread.interrupted()) { // 若中断
                 breakBarrier();
                 throw new InterruptedException();
             }
 
-            int index = --count;
+            int index = --count; // 数量-1
             if (index == 0) {  // tripped
                 boolean ranAction = false;
                 try {
-                    final Runnable command = barrierCommand;
+                    final Runnable command = barrierCommand; // run函数
                     if (command != null)
-                        command.run();
+                        command.run(); // 不为null，先运行函数
                     ranAction = true;
-                    nextGeneration();
+                    nextGeneration(); // 唤醒线程
                     return 0;
                 } finally {
                     if (!ranAction)
@@ -227,21 +200,19 @@ public class CyclicBarrier {
                 }
             }
 
-            // loop until tripped, broken, interrupted, or timed out
+            // 循环 until tripped, broken, 打断, or 超时
             for (;;) {
                 try {
-                    if (!timed)
-                        trip.await();
-                    else if (nanos > 0L)
+                    if (!timed) // 非时间模式
+                        trip.await(); // 条件锁
+                    else if (nanos > 0L) // 有超时时间的阻塞
                         nanos = trip.awaitNanos(nanos);
                 } catch (InterruptedException ie) {
-                    if (g == generation && ! g.broken) {
+                    if (g == generation && ! g.broken) { // 中断的话
                         breakBarrier();
                         throw ie;
                     } else {
-                        // We're about to finish waiting even if we had not
-                        // been interrupted, so this interrupt is deemed to
-                        // "belong" to subsequent execution.
+                        // 即使没有被中断，我们也将完成等待，因此这个中断被认为“属于”后续执行。
                         Thread.currentThread().interrupt();
                     }
                 }
@@ -263,10 +234,8 @@ public class CyclicBarrier {
     }
 
     /**
-     * Creates a new {@code CyclicBarrier} that will trip when the
-     * given number of parties (threads) are waiting upon it, and which
-     * will execute the given barrier action when the barrier is tripped,
-     * performed by the last thread entering the barrier.
+     * 创建一个新的CyclicBarrier，当给定数量的参与方(线程)正在等待它时，它将跳闸，当屏障跳闸时，
+     * 它将执行给定的barrier动作，由最后一个进入屏障的线程执行。
      *
      * @param parties the number of threads that must invoke {@link #await}
      *        before the barrier is tripped
@@ -276,15 +245,14 @@ public class CyclicBarrier {
      */
     public CyclicBarrier(int parties, Runnable barrierAction) {
         if (parties <= 0) throw new IllegalArgumentException();
-        this.parties = parties;
+        this.parties = parties;// 在触发屏障之前必须调用await()的线程的数量
         this.count = parties;
-        this.barrierCommand = barrierAction;
+        this.barrierCommand = barrierAction; // 执行函数
     }
 
     /**
-     * Creates a new {@code CyclicBarrier} that will trip when the
-     * given number of parties (threads) are waiting upon it, and
-     * does not perform a predefined action when the barrier is tripped.
+     * 创建一个新的CyclicBarrier，当给定数量的参与方(线程)正在等待它时，
+     * 它将会跳闸，并且在跳闸时不会执行预定义的操作。
      *
      * @param parties the number of threads that must invoke {@link #await}
      *        before the barrier is tripped
@@ -295,7 +263,7 @@ public class CyclicBarrier {
     }
 
     /**
-     * Returns the number of parties required to trip this barrier.
+     * 返回需要跨越此屏障的参与方的数量。
      *
      * @return the number of parties required to trip this barrier
      */
@@ -304,47 +272,31 @@ public class CyclicBarrier {
     }
 
     /**
-     * Waits until all {@linkplain #getParties parties} have invoked
-     * {@code await} on this barrier.
+     * 等待，直到所有参与方都已调用此屏障上的等待。
      *
-     * <p>If the current thread is not the last to arrive then it is
-     * disabled for thread scheduling purposes and lies dormant until
-     * one of the following things happens:
+     * <p>如果当前线程不是最后到达的，那么出于线程调度的目的，它将被禁用，并处于休眠状态，直到发生以下情况之一:
      * <ul>
-     * <li>The last thread arrives; or
-     * <li>Some other thread {@linkplain Thread#interrupt interrupts}
-     * the current thread; or
-     * <li>Some other thread {@linkplain Thread#interrupt interrupts}
-     * one of the other waiting threads; or
-     * <li>Some other thread times out while waiting for barrier; or
-     * <li>Some other thread invokes {@link #reset} on this barrier.
+     * <li>最后一个线程到达;
+     * <li>其他一些线程中断当前线程;
+     * <li>其他一些线程会中断一个正在等待的线程;
+     * <li>其他一些线程在等待barrier时超时;
+     * <li>其他一些线程在这个屏障上调用reset()。
      * </ul>
      *
-     * <p>If the current thread:
+     * <p>如果当前线程:
      * <ul>
-     * <li>has its interrupted status set on entry to this method; or
-     * <li>is {@linkplain Thread#interrupt interrupted} while waiting
+     * <li>在进入此方法时已设置其中断状态;
+     * <li>在等待时中断,然后抛出InterruptedException，并清除当前线程的中断状态。
      * </ul>
-     * then {@link InterruptedException} is thrown and the current thread's
-     * interrupted status is cleared.
+     * 如果在任何线程等待时壁垒被重置()，或者在调用await时壁垒被打破，或者在任何线程等待时壁垒被打破，
+     * 那么抛出broken barrierexception。
      *
-     * <p>If the barrier is {@link #reset} while any thread is waiting,
-     * or if the barrier {@linkplain #isBroken is broken} when
-     * {@code await} is invoked, or while any thread is waiting, then
-     * {@link BrokenBarrierException} is thrown.
+     * <p>如果任何线程在等待时被中断，那么所有其他等待线程将抛出broken barrierexception，
+     * 该barrier将处于broken状态。
      *
-     * <p>If any thread is {@linkplain Thread#interrupt interrupted} while waiting,
-     * then all other waiting threads will throw
-     * {@link BrokenBarrierException} and the barrier is placed in the broken
-     * state.
-     *
-     * <p>If the current thread is the last thread to arrive, and a
-     * non-null barrier action was supplied in the constructor, then the
-     * current thread runs the action before allowing the other threads to
-     * continue.
-     * If an exception occurs during the barrier action then that exception
-     * will be propagated in the current thread and the barrier is placed in
-     * the broken state.
+     * <p>如果当前线程是最后一个到达的线程，并且构造函数中提供了一个非空屏障操作，
+     * 那么当前线程在允许其他线程继续之前运行该操作。
+     * 如果barrier操作期间发生异常，那么该异常将在当前线程中传播，barrier将处于中断状态。
      *
      * @return the arrival index of the current thread, where index
      *         {@code getParties() - 1} indicates the first
@@ -436,7 +388,7 @@ public class CyclicBarrier {
     }
 
     /**
-     * Queries if this barrier is in a broken state.
+     * 查询此屏障是否处于中断状态。
      *
      * @return {@code true} if one or more parties broke out of this
      *         barrier due to interruption or timeout since
@@ -454,13 +406,9 @@ public class CyclicBarrier {
     }
 
     /**
-     * Resets the barrier to its initial state.  If any parties are
-     * currently waiting at the barrier, they will return with a
-     * {@link BrokenBarrierException}. Note that resets <em>after</em>
-     * a breakage has occurred for other reasons can be complicated to
-     * carry out; threads need to re-synchronize in some other way,
-     * and choose one to perform the reset.  It may be preferable to
-     * instead create a new barrier for subsequent use.
+     * 将势垒重置为其初始状态。如果任何一方当前正在屏障处等待，他们将返回一个破损的屏障异常。
+     * 请注意，在因其他原因造成的破损发生后进行复位可能比较复杂;
+     * 线程需要以其他方式重新同步，并选择一种方式执行重置。最好是为后续使用创建一个新的屏障。
      */
     public void reset() {
         final ReentrantLock lock = this.lock;
@@ -474,8 +422,7 @@ public class CyclicBarrier {
     }
 
     /**
-     * Returns the number of parties currently waiting at the barrier.
-     * This method is primarily useful for debugging and assertions.
+     * 返回当前在屏障处等待的参与方的数量。此方法主要用于调试和断言。
      *
      * @return the number of parties currently blocked in {@link #await}
      */
