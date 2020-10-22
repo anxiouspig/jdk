@@ -42,102 +42,62 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.LockSupport;
 
 /**
- * A capability-based lock with three modes for controlling read/write
- * access.  The state of a StampedLock consists of a version and mode.
- * Lock acquisition methods return a stamp that represents and
- * controls access with respect to a lock state; "try" versions of
- * these methods may instead return the special value zero to
- * represent failure to acquire access. Lock release and conversion
- * methods require stamps as arguments, and fail if they do not match
- * the state of the lock. The three modes are:
+ * 一种基于能力的锁，有三种模式用于控制读/写访问。StampedLock的状态由版本和模式组成。
+ * 锁获取方法返回一个表示并控制对锁状态的访问的戳记;这些方法的“尝试”版本可能会返回特殊的值0来表示访问失败。
+ * 锁释放和转换方法需要戳记作为参数，如果它们与锁的状态不匹配，则会失败。三种模式是:
  *
  * <ul>
  *
- *  <li><b>Writing.</b> Method {@link #writeLock} possibly blocks
- *   waiting for exclusive access, returning a stamp that can be used
- *   in method {@link #unlockWrite} to release the lock. Untimed and
- *   timed versions of {@code tryWriteLock} are also provided. When
- *   the lock is held in write mode, no read locks may be obtained,
- *   and all optimistic read validations will fail.  </li>
+ *  <li>Write:方法writeLock()可能阻塞等待独占访问，返回一个可以在方法unlockWrite(long)中使用的戳记来释放锁。
+ *  还提供了不定时和定时的tryWriteLock版本。当锁处于写模式时，可能不会获得读锁，所有乐观读验证都将失败。</li>
  *
- *  <li><b>Reading.</b> Method {@link #readLock} possibly blocks
- *   waiting for non-exclusive access, returning a stamp that can be
- *   used in method {@link #unlockRead} to release the lock. Untimed
- *   and timed versions of {@code tryReadLock} are also provided. </li>
+ *  <li>Reading:方法readLock()可能阻塞等待非独占访问，返回一个可以在方法unlockRead(long)中使用的戳记来释放锁。
+ *  还提供了不定时和定时的tryReadLock版本。</li>
  *
- *  <li><b>Optimistic Reading.</b> Method {@link #tryOptimisticRead}
- *   returns a non-zero stamp only if the lock is not currently held
- *   in write mode. Method {@link #validate} returns true if the lock
- *   has not been acquired in write mode since obtaining a given
- *   stamp.  This mode can be thought of as an extremely weak version
- *   of a read-lock, that can be broken by a writer at any time.  The
- *   use of optimistic mode for short read-only code segments often
- *   reduces contention and improves throughput.  However, its use is
- *   inherently fragile.  Optimistic read sections should only read
- *   fields and hold them in local variables for later use after
- *   validation. Fields read while in optimistic mode may be wildly
- *   inconsistent, so usage applies only when you are familiar enough
- *   with data representations to check consistency and/or repeatedly
- *   invoke method {@code validate()}.  For example, such steps are
- *   typically required when first reading an object or array
- *   reference, and then accessing one of its fields, elements or
- *   methods. </li>
+ *  <li>Optimistic Reading:方法tryOptimisticRead()仅在当前锁未处于写模式时才返回非零戳记。
+ *  方法validate(long)返回true，如果在获取给定的戳记之后，锁还没有在写模式下获得。
+ *  这种模式可以被认为是一个非常弱的读锁版本，可以被写入器在任何时候打破。
+ *  对于短的只读代码段使用乐观模式通常可以减少争用并提高吞吐量。然而，它的使用本身是脆弱的。
+ *  乐观读取部分应该只读取字段并将它们保存在局部变量中，以便在验证之后使用。
+ *  在乐观模式下读取的字段可能非常不一致，
+ *  因此只有在您足够熟悉数据表示以检查一致性和/或反复调用方法validate()时才会使用。
+ *  例如，在首先读取对象或数组引用，然后访问其中一个字段、元素或方法时，通常需要这些步骤。</li>
  *
  * </ul>
  *
- * <p>This class also supports methods that conditionally provide
- * conversions across the three modes. For example, method {@link
- * #tryConvertToWriteLock} attempts to "upgrade" a mode, returning
- * a valid write stamp if (1) already in writing mode (2) in reading
- * mode and there are no other readers or (3) in optimistic mode and
- * the lock is available. The forms of these methods are designed to
- * help reduce some of the code bloat that otherwise occurs in
- * retry-based designs.
+ * <p>该类还支持有条件地跨三种模式提供转换的方法。
+ * 例如，方法tryConvertToWriteLock(long)尝试“升级”一个模式，
+ * 如果(1)已经处于写入模式(2)处于读取模式，并且没有其他读取器，
+ * 或者(3)处于乐观模式，且锁可用，则返回一个有效的写戳。
+ * 这些方法的形式旨在帮助减少在基于回退的设计中出现的一些代码膨胀。
  *
- * <p>StampedLocks are designed for use as internal utilities in the
- * development of thread-safe components. Their use relies on
- * knowledge of the internal properties of the data, objects, and
- * methods they are protecting.  They are not reentrant, so locked
- * bodies should not call other unknown methods that may try to
- * re-acquire locks (although you may pass a stamp to other methods
- * that can use or convert it).  The use of read lock modes relies on
- * the associated code sections being side-effect-free.  Unvalidated
- * optimistic read sections cannot call methods that are not known to
- * tolerate potential inconsistencies.  Stamps use finite
- * representations, and are not cryptographically secure (i.e., a
- * valid stamp may be guessable). Stamp values may recycle after (no
- * sooner than) one year of continuous operation. A stamp held without
- * use or validation for longer than this period may fail to validate
- * correctly.  StampedLocks are serializable, but always deserialize
- * into initial unlocked state, so they are not useful for remote
- * locking.
+ * <p>在开发线程安全组件时，StampedLocks被设计为内部实用程序。
+ * 它们的使用依赖于它们所保护的数据、对象和方法的内部属性的知识。
+ * 它们是不可重入的，所以锁定的实体不应该调用其他未知的方法，
+ * 这些方法可能试图重新获取锁(尽管您可以将戳记传递给其他可以使用或转换它的方法)。
+ * 读锁定模式的使用依赖于相关的代码部分是无副作用的。
+ * 未经验证的乐观读取部分不能调用不知道可以容忍潜在不一致性的方法。
+ * 戳记使用有限的表示，并且在密码上是不安全的(例如。，有效的印章可能是可猜测的)。
+ * 邮票价值可在(不早于)连续运作一年后循环使用。未经使用或验证而持有超过此期限的戳记可能无法正确验证。
+ * StampedLocks是可序列化的，但总是反序列化为初始解锁状态，因此它们对于远程锁定没有用处。
  *
- * <p>The scheduling policy of StampedLock does not consistently
- * prefer readers over writers or vice versa.  All "try" methods are
- * best-effort and do not necessarily conform to any scheduling or
- * fairness policy. A zero return from any "try" method for acquiring
- * or converting locks does not carry any information about the state
- * of the lock; a subsequent invocation may succeed.
+ * <p>StampedLock的调度策略并不总是优先选择读写器，反之亦然。
+ * 所有的“尝试”方法都是尽了最大努力的，不一定符合任何调度或公平策略。
+ * 从获取或转换锁的任何“尝试”方法返回的零不会携带有关锁状态的任何信息;后续调用可能成功。
  *
- * <p>Because it supports coordinated usage across multiple lock
- * modes, this class does not directly implement the {@link Lock} or
- * {@link ReadWriteLock} interfaces. However, a StampedLock may be
- * viewed {@link #asReadLock()}, {@link #asWriteLock()}, or {@link
- * #asReadWriteLock()} in applications requiring only the associated
- * set of functionality.
+ * <p>因为它支持跨多个锁模式的协调使用，所以这个类不直接实现锁或读写锁接口。
+ * 但是，在只需要相关功能集的应用程序中，可以将StampedLock视为asReadLock()、
+ * asWriteLock()或asReadWriteLock()。
  *
- * <p><b>Sample Usage.</b> The following illustrates some usage idioms
- * in a class that maintains simple two-dimensional points. The sample
- * code illustrates some try/catch conventions even though they are
- * not strictly needed here because no exceptions can occur in their
- * bodies.<br>
+ * <p>下面说明了维护简单二维点的类中的一些用法。示例代码演示了一些try/catch约定，
+ * 尽管这里并不严格需要它们，因为它们的主体中不可能出现异常。<br>
  *
  *  <pre>{@code
  * class Point {
  *   private double x, y;
  *   private final StampedLock sl = new StampedLock();
  *
- *   void move(double deltaX, double deltaY) { // an exclusively locked method
+ *   void move(double deltaX, double deltaY) { // 一个排它锁方法
  *     long stamp = sl.writeLock();
  *     try {
  *       x += deltaX;
@@ -147,7 +107,7 @@ import java.util.concurrent.locks.LockSupport;
  *     }
  *   }
  *
- *   double distanceFromOrigin() { // A read-only method
+ *   double distanceFromOrigin() { // 一个读锁方法
  *     long stamp = sl.tryOptimisticRead();
  *     double currentX = x, currentY = y;
  *     if (!sl.validate(stamp)) {
@@ -162,7 +122,7 @@ import java.util.concurrent.locks.LockSupport;
  *     return Math.sqrt(currentX * currentX + currentY * currentY);
  *   }
  *
- *   void moveIfAtOrigin(double newX, double newY) { // upgrade
+ *   void moveIfAtOrigin(double newX, double newY) { // 升级
  *     // Could instead start with optimistic, not read mode
  *     long stamp = sl.readLock();
  *     try {
@@ -268,60 +228,60 @@ public class StampedLock implements java.io.Serializable {
 
     private static final long serialVersionUID = -6001602636862214147L;
 
-    /** Number of processors, for spin control */
+    /** CPU核数 */
     private static final int NCPU = Runtime.getRuntime().availableProcessors();
 
-    /** Maximum number of retries before enqueuing on acquisition */
+    /** 线程进入队列前最大自旋次数 */
     private static final int SPINS = (NCPU > 1) ? 1 << 6 : 0;
 
-    /** Maximum number of retries before blocking at head on acquisition */
+    /** 队列头结点阻塞前的最大自旋次数 */
     private static final int HEAD_SPINS = (NCPU > 1) ? 1 << 10 : 0;
 
-    /** Maximum number of retries before re-blocking */
+    /** 重新阻塞前的最大自旋次数 */
     private static final int MAX_HEAD_SPINS = (NCPU > 1) ? 1 << 16 : 0;
 
-    /** The period for yielding when waiting for overflow spinlock */
+    /** 等待溢出自旋锁时的一段时间 */
     private static final int OVERFLOW_YIELD_RATE = 7; // must be power 2 - 1
 
-    /** The number of bits to use for reader count before overflowing */
+    /** 在溢出之前用于读取器计数的位的数目 */
     private static final int LG_READERS = 7;
 
     // Values for lock state and stamp operations
     private static final long RUNIT = 1L;
-    private static final long WBIT  = 1L << LG_READERS;
-    private static final long RBITS = WBIT - 1L;
-    private static final long RFULL = RBITS - 1L;
-    private static final long ABITS = RBITS | WBIT;
+    private static final long WBIT  = 1L << LG_READERS; // 1000,0000
+    private static final long RBITS = WBIT - 1L; // 111,1111
+    private static final long RFULL = RBITS - 1L; // 111,1110
+    private static final long ABITS = RBITS | WBIT; // 1111,1111
     private static final long SBITS = ~RBITS; // note overlap with ABITS
 
-    // Initial value for lock state; avoid failure value zero
+    // 锁状态初始化值; 避免失败值0
     private static final long ORIGIN = WBIT << 1;
 
-    // Special value from cancelled acquire methods so caller can throw IE
+    // 取消获取方法特殊值 so caller can throw IE
     private static final long INTERRUPTED = 1L;
 
-    // Values for node status; order matters
-    private static final int WAITING   = -1;
-    private static final int CANCELLED =  1;
+    // 节点状态值; order matters
+    private static final int WAITING   = -1; // 等待
+    private static final int CANCELLED =  1; // 取消
 
-    // Modes for nodes (int not boolean to allow arithmetic)
+    // 节点模式 (int代替boolean计算)
     private static final int RMODE = 0;
     private static final int WMODE = 1;
 
-    /** Wait nodes */
-    static final class WNode {
-        volatile WNode prev;
-        volatile WNode next;
-        volatile WNode cowait;    // list of linked readers
-        volatile Thread thread;   // non-null while possibly parked
+    /** 等待节点  */
+    static final class WNode { // 写节点
+        volatile WNode prev; // 前节点
+        volatile WNode next; // 下一个节点
+        volatile WNode cowait;    // 读表
+        volatile Thread thread;   // 可能阻塞非null线程
         volatile int status;      // 0, WAITING, or CANCELLED
         final int mode;           // RMODE or WMODE
         WNode(int m, WNode p) { mode = m; prev = p; }
     }
 
-    /** Head of CLH queue */
+    /** 头 of CLH queue */
     private transient volatile WNode whead;
-    /** Tail (last) of CLH queue */
+    /** 尾 (last) of CLH queue */
     private transient volatile WNode wtail;
 
     // views
@@ -329,49 +289,45 @@ public class StampedLock implements java.io.Serializable {
     transient WriteLockView writeLockView;
     transient ReadWriteLockView readWriteLockView;
 
-    /** Lock sequence/state */
+    /** 锁状态 */
     private transient volatile long state;
-    /** extra reader count when state read count saturated */
+    /** 额外的读计数 当状态读数量饱和时 */
     private transient int readerOverflow;
 
     /**
-     * Creates a new lock, initially in unlocked state.
+     * 创建一个新的锁, 初始化为非锁状态
      */
     public StampedLock() {
-        state = ORIGIN;
+        state = ORIGIN; // 1,0000,0000
     }
 
     /**
-     * Exclusively acquires the lock, blocking if necessary
-     * until available.
+     * 独占获取锁，必要时阻塞，直到可用。
      *
-     * @return a stamp that can be used to unlock or convert mode
+     * @return 可用于解锁或转换模式的戳记
      */
     public long writeLock() {
-        long s, next;  // bypass acquireWrite in fully unlocked case only
-        return ((((s = state) & ABITS) == 0L &&
-                 U.compareAndSwapLong(this, STATE, s, next = s + WBIT)) ?
-                next : acquireWrite(false, 0L));
+        long s, next;  //  仅在完全解锁的情况下绕过acquireWrite ；s 当前状态值；next 下一个状态值
+        return ((((s = state) & ABITS) == 0L && // 1,0000,0000 & 1111,1111 = 0 没有读锁和写锁
+                 U.compareAndSwapLong(this, STATE, s, next = s + WBIT)) ? // 1,1000,0000 设置写锁
+                next : acquireWrite(false, 0L)); // 成功返回next，失败尝试获取写锁
     }
 
     /**
-     * Exclusively acquires the lock if it is immediately available.
+     * 如果锁是立即可用的，则独占地获取锁。
      *
-     * @return a stamp that can be used to unlock or convert mode,
-     * or zero if the lock is not available
+     * @return 可用于解锁或转换模式的戳记，如果锁不可用则为零
      */
     public long tryWriteLock() {
         long s, next;
         return ((((s = state) & ABITS) == 0L &&
                  U.compareAndSwapLong(this, STATE, s, next = s + WBIT)) ?
-                next : 0L);
+                next : 0L); // 获取成功返回state，失败返回0；
     }
 
     /**
-     * Exclusively acquires the lock if it is available within the
-     * given time and the current thread has not been interrupted.
-     * Behavior under timeout and interruption matches that specified
-     * for method {@link Lock#tryLock(long,TimeUnit)}.
+     * 如果锁在给定时间内可用并且当前线程没有被中断，则独占性地获取锁。
+     * 超时和中断下的行为与方法Lock.tryLock(long,TimeUnit)指定的行为匹配。
      *
      * @param time the maximum time to wait for the lock
      * @param unit the time unit of the {@code time} argument
@@ -382,26 +338,26 @@ public class StampedLock implements java.io.Serializable {
      */
     public long tryWriteLock(long time, TimeUnit unit)
         throws InterruptedException {
+        // 将时间转换为纳秒
         long nanos = unit.toNanos(time);
-        if (!Thread.interrupted()) {
+        if (!Thread.interrupted()) { // 判断线程是否中断
             long next, deadline;
+            // 先调用视图获取写锁，成功则返回
             if ((next = tryWriteLock()) != 0L)
                 return next;
-            if (nanos <= 0L)
+            if (nanos <= 0L) // 超时则失败
                 return 0L;
             if ((deadline = System.nanoTime() + nanos) == 0L)
                 deadline = 1L;
-            if ((next = acquireWrite(true, deadline)) != INTERRUPTED)
+            if ((next = acquireWrite(true, deadline)) != INTERRUPTED) // 不超时的话加锁成功
                 return next;
         }
         throw new InterruptedException();
     }
 
     /**
-     * Exclusively acquires the lock, blocking if necessary
-     * until available or the current thread is interrupted.
-     * Behavior under interruption matches that specified
-     * for method {@link Lock#lockInterruptibly()}.
+     * 独占获取锁，必要时阻塞，直到可用或当前线程中断。
+     * 中断下的行为与为Lock.lockInterruptibly()方法指定的行为相匹配。
      *
      * @return a stamp that can be used to unlock or convert mode
      * @throws InterruptedException if the current thread is interrupted
@@ -409,6 +365,7 @@ public class StampedLock implements java.io.Serializable {
      */
     public long writeLockInterruptibly() throws InterruptedException {
         long next;
+        // 中断则抛出异常
         if (!Thread.interrupted() &&
             (next = acquireWrite(true, 0L)) != INTERRUPTED)
             return next;
@@ -416,43 +373,41 @@ public class StampedLock implements java.io.Serializable {
     }
 
     /**
-     * Non-exclusively acquires the lock, blocking if necessary
-     * until available.
+     * 非独占性获取锁，必要时阻塞，直到可用为止。
      *
      * @return a stamp that can be used to unlock or convert mode
      */
-    public long readLock() {
+    public long readLock() { // 获取读锁
         long s = state, next;  // bypass acquireRead on common uncontended case
+        // 头尾节点相等 & 读锁没有溢出 & 设置读锁成功 = 获取成功 ，否则尝试获取
         return ((whead == wtail && (s & ABITS) < RFULL &&
                  U.compareAndSwapLong(this, STATE, s, next = s + RUNIT)) ?
                 next : acquireRead(false, 0L));
     }
 
     /**
-     * Non-exclusively acquires the lock if it is immediately available.
+     * 如果锁是立即可用的，则非独占性获取锁。
      *
      * @return a stamp that can be used to unlock or convert mode,
      * or zero if the lock is not available
      */
-    public long tryReadLock() {
+    public long tryReadLock() { // 非阻塞获取
         for (;;) {
             long s, m, next;
-            if ((m = (s = state) & ABITS) == WBIT)
+            if ((m = (s = state) & ABITS) == WBIT) // 写锁状态，获取失败
                 return 0L;
-            else if (m < RFULL) {
+            else if (m < RFULL) { // 没有溢出
                 if (U.compareAndSwapLong(this, STATE, s, next = s + RUNIT))
-                    return next;
+                    return next; // 获取成功
             }
-            else if ((next = tryIncReaderOverflow(s)) != 0L)
+            else if ((next = tryIncReaderOverflow(s)) != 0L) // 读锁溢出
                 return next;
         }
     }
 
     /**
-     * Non-exclusively acquires the lock if it is available within the
-     * given time and the current thread has not been interrupted.
-     * Behavior under timeout and interruption matches that specified
-     * for method {@link Lock#tryLock(long,TimeUnit)}.
+     * 如果锁在给定的时间内可用并且当前线程没有被中断，则非独占性获取锁。
+     * 超时和中断下的行为与方法Lock.tryLock(long,TimeUnit)指定的行为匹配。
      *
      * @param time the maximum time to wait for the lock
      * @param unit the time unit of the {@code time} argument
@@ -461,34 +416,35 @@ public class StampedLock implements java.io.Serializable {
      * @throws InterruptedException if the current thread is interrupted
      * before acquiring the lock
      */
-    public long tryReadLock(long time, TimeUnit unit)
+    public long tryReadLock(long time, TimeUnit unit) // 超时机制，支持中断
         throws InterruptedException {
         long s, m, next, deadline;
+        // 转换纳秒
         long nanos = unit.toNanos(time);
-        if (!Thread.interrupted()) {
+        if (!Thread.interrupted()) { // 非中断状态
+            // 不为写锁状态
             if ((m = (s = state) & ABITS) != WBIT) {
-                if (m < RFULL) {
+                if (m < RFULL) { // 读锁未溢出
                     if (U.compareAndSwapLong(this, STATE, s, next = s + RUNIT))
-                        return next;
-                }
+                        return next; // 成功返回
+                } // 溢出情况去尝试
                 else if ((next = tryIncReaderOverflow(s)) != 0L)
                     return next;
             }
-            if (nanos <= 0L)
+            if (nanos <= 0L) // 小于0，失败
                 return 0L;
             if ((deadline = System.nanoTime() + nanos) == 0L)
                 deadline = 1L;
+            // 尝试获取 非中断
             if ((next = acquireRead(true, deadline)) != INTERRUPTED)
                 return next;
         }
-        throw new InterruptedException();
+        throw new InterruptedException(); // 中断异常
     }
 
     /**
-     * Non-exclusively acquires the lock, blocking if necessary
-     * until available or the current thread is interrupted.
-     * Behavior under interruption matches that specified
-     * for method {@link Lock#lockInterruptibly()}.
+     * 非独占性获取锁，必要时阻塞，直到可用或当前线程中断。
+     * 中断下的行为与为Lock.lockInterruptibly()方法指定的行为相匹配。
      *
      * @return a stamp that can be used to unlock or convert mode
      * @throws InterruptedException if the current thread is interrupted
@@ -497,42 +453,40 @@ public class StampedLock implements java.io.Serializable {
     public long readLockInterruptibly() throws InterruptedException {
         long next;
         if (!Thread.interrupted() &&
-            (next = acquireRead(true, 0L)) != INTERRUPTED)
+            (next = acquireRead(true, 0L)) != INTERRUPTED) // 非中断尝试获取
             return next;
-        throw new InterruptedException();
+        throw new InterruptedException(); // 中断
     }
 
     /**
-     * Returns a stamp that can later be validated, or zero
-     * if exclusively locked.
+     * 返回一个稍后可以验证的戳记，如果独占锁定则返回零。
      *
      * @return a stamp, or zero if exclusively locked
      */
     public long tryOptimisticRead() {
         long s;
+        // 不处于写模式返回戳记，否则失败
         return (((s = state) & WBIT) == 0L) ? (s & SBITS) : 0L;
     }
 
     /**
-     * Returns true if the lock has not been exclusively acquired
-     * since issuance of the given stamp. Always returns false if the
-     * stamp is zero. Always returns true if the stamp represents a
-     * currently held lock. Invoking this method with a value not
-     * obtained from {@link #tryOptimisticRead} or a locking method
-     * for this lock has no defined effect or result.
+     * 如果自发出给定的戳记以来该锁没有被独占，则返回true。
+     * 如果戳记为零，则始终返回false。如果戳记表示当前持有的锁，则始终返回true。
+     * 使用未从tryOptimisticRead()获取的值或此锁的锁定方法调用此方法没有定义效果或结果。
      *
      * @param stamp a stamp
      * @return {@code true} if the lock has not been exclusively acquired
      * since issuance of the given stamp; else false
      */
     public boolean validate(long stamp) {
+        // 加入内存屏障
         U.loadFence();
+        // cas
         return (stamp & SBITS) == (state & SBITS);
     }
 
     /**
-     * If the lock state matches the given stamp, releases the
-     * exclusive lock.
+     * 如果锁状态与给定的戳记匹配，则释放互斥锁。
      *
      * @param stamp a stamp returned by a write-lock operation
      * @throws IllegalMonitorStateException if the stamp does
@@ -540,16 +494,19 @@ public class StampedLock implements java.io.Serializable {
      */
     public void unlockWrite(long stamp) {
         WNode h;
+        // 如果当前state和传入的戳记不匹配，抛异常
         if (state != stamp || (stamp & WBIT) == 0L)
             throw new IllegalMonitorStateException();
+        // 释放锁需要在高位增加记录
         state = (stamp += WBIT) == 0L ? ORIGIN : stamp;
+        // 头节点不为空，并且头结点状态不为0
         if ((h = whead) != null && h.status != 0)
+            // 释放下个节点
             release(h);
     }
 
     /**
-     * If the lock state matches the given stamp, releases the
-     * non-exclusive lock.
+     * 如果锁状态与给定的戳记匹配，则释放非排他锁。
      *
      * @param stamp a stamp returned by a read-lock operation
      * @throws IllegalMonitorStateException if the stamp does
@@ -557,46 +514,53 @@ public class StampedLock implements java.io.Serializable {
      */
     public void unlockRead(long stamp) {
         long s, m; WNode h;
-        for (;;) {
+        for (;;) { // 自旋
+            // 写状态改变 或 无锁 或 写锁 -》 抛异常
             if (((s = state) & SBITS) != (stamp & SBITS) ||
                 (stamp & ABITS) == 0L || (m = s & ABITS) == 0L || m == WBIT)
                 throw new IllegalMonitorStateException();
-            if (m < RFULL) {
+            if (m < RFULL) { // 读锁未溢出
                 if (U.compareAndSwapLong(this, STATE, s, s - RUNIT)) {
                     if (m == RUNIT && (h = whead) != null && h.status != 0)
-                        release(h);
+                        release(h); // 释放读锁
                     break;
                 }
             }
-            else if (tryDecReaderOverflow(s) != 0L)
+            else if (tryDecReaderOverflow(s) != 0L) // 处理读锁溢出
                 break;
         }
     }
 
     /**
-     * If the lock state matches the given stamp, releases the
-     * corresponding mode of the lock.
+     * 如果锁状态与给定的戳记匹配，则释放锁的相应模式。
      *
      * @param stamp a stamp returned by a lock operation
      * @throws IllegalMonitorStateException if the stamp does
      * not match the current state of this lock
      */
-    public void unlock(long stamp) {
+    public void unlock(long stamp) { // 读写锁都可以释放
         long a = stamp & ABITS, m, s; WNode h;
+        // 判断高位写锁记录
         while (((s = state) & SBITS) == (stamp & SBITS)) {
+            // 如果当前处于无锁状态或乐观读状态，直接退出
             if ((m = s & ABITS) == 0L)
                 break;
-            else if (m == WBIT) {
+            else if (m == WBIT) { // 写模式
+                // 传入的stam不是写模式，退出
                 if (a != m)
                     break;
+                // 释放写锁，添加记录
                 state = (s += WBIT) == 0L ? ORIGIN : s;
                 if ((h = whead) != null && h.status != 0)
                     release(h);
                 return;
             }
+            // 无锁或乐观读，退出
             else if (a == 0L || a >= WBIT)
                 break;
+                // 读锁没有溢出
             else if (m < RFULL) {
+                // 释放读锁,成功退出，失败重试
                 if (U.compareAndSwapLong(this, STATE, s, s - RUNIT)) {
                     if (m == RUNIT && (h = whead) != null && h.status != 0)
                         release(h);
@@ -606,79 +570,77 @@ public class StampedLock implements java.io.Serializable {
             else if (tryDecReaderOverflow(s) != 0L)
                 return;
         }
+        // 记录不对，抛异常
         throw new IllegalMonitorStateException();
     }
 
     /**
-     * If the lock state matches the given stamp, performs one of
-     * the following actions. If the stamp represents holding a write
-     * lock, returns it.  Or, if a read lock, if the write lock is
-     * available, releases the read lock and returns a write stamp.
-     * Or, if an optimistic read, returns a write stamp only if
-     * immediately available. This method returns zero in all other
-     * cases.
+     * 如果锁状态与给定的戳记匹配，则执行以下操作之一。
+     * 如果戳记表示持有写锁，则返回它。或者，如果有读锁，如果写锁可用，则释放读锁并返回写戳。
+     * 或者，如果是乐观读，则仅在立即可用时才返回写戳记。此方法在所有其他情况下都返回零。
      *
      * @param stamp a stamp
      * @return a valid write stamp, or zero on failure
      */
     public long tryConvertToWriteLock(long stamp) {
         long a = stamp & ABITS, m, s, next;
+        // 若锁记录相同
         while (((s = state) & SBITS) == (stamp & SBITS)) {
-            if ((m = s & ABITS) == 0L) {
-                if (a != 0L)
+            if ((m = s & ABITS) == 0L) { // 无锁或乐观读
+                if (a != 0L) // 戳记有写败
                     break;
                 if (U.compareAndSwapLong(this, STATE, s, next = s + WBIT))
-                    return next;
+                    return next; // 升级成功
             }
-            else if (m == WBIT) {
-                if (a != m)
+            else if (m == WBIT) { // 若写锁状态
+                if (a != m) // 非写锁 失败
                     break;
-                return stamp;
+                return stamp; // 返回写锁状态stamp
             }
-            else if (m == RUNIT && a != 0L) {
+            else if (m == RUNIT && a != 0L) { // 若只有一个读锁，则直接升级为写锁
                 if (U.compareAndSwapLong(this, STATE, s,
                                          next = s - RUNIT + WBIT))
                     return next;
             }
-            else
+            else // 否则退出
                 break;
         }
         return 0L;
     }
 
     /**
-     * If the lock state matches the given stamp, performs one of
-     * the following actions. If the stamp represents holding a write
-     * lock, releases it and obtains a read lock.  Or, if a read lock,
-     * returns it. Or, if an optimistic read, acquires a read lock and
-     * returns a read stamp only if immediately available. This method
-     * returns zero in all other cases.
+     * 如果锁状态与给定的戳记匹配，则执行以下操作之一。
+     * 如果戳记表示持有写锁，则释放它并获得读锁。
+     * 或者，如果是读锁，则返回它。或者，如果一个乐观读操作获得了一个读锁，
+     * 并且只有在立即可用的情况下才返回一个读戳。此方法在所有其他情况下都返回零。
      *
      * @param stamp a stamp
      * @return a valid read stamp, or zero on failure
      */
     public long tryConvertToReadLock(long stamp) {
         long a = stamp & ABITS, m, s, next; WNode h;
+        // 锁记录
         while (((s = state) & SBITS) == (stamp & SBITS)) {
+            // 无锁
             if ((m = s & ABITS) == 0L) {
                 if (a != 0L)
                     break;
                 else if (m < RFULL) {
                     if (U.compareAndSwapLong(this, STATE, s, next = s + RUNIT))
-                        return next;
+                        return next; // 直接升级
                 }
-                else if ((next = tryIncReaderOverflow(s)) != 0L)
+                else if ((next = tryIncReaderOverflow(s)) != 0L) // 处理溢出
                     return next;
             }
-            else if (m == WBIT) {
+            else if (m == WBIT) { // 有锁
                 if (a != m)
                     break;
-                state = next = s + (WBIT + RUNIT);
+                state = next = s + (WBIT + RUNIT); // 记录写锁，添加读锁
                 if ((h = whead) != null && h.status != 0)
-                    release(h);
+                    release(h); // 释放后续节点
                 return next;
             }
-            else if (a != 0L && a < WBIT)
+            else if (a != 0L && a < WBIT) // 若是读锁，直接返回
                 return stamp;
             else
                 break;
@@ -687,11 +649,9 @@ public class StampedLock implements java.io.Serializable {
     }
 
     /**
-     * If the lock state matches the given stamp then, if the stamp
-     * represents holding a lock, releases it and returns an
-     * observation stamp.  Or, if an optimistic read, returns it if
-     * validated. This method returns zero in all other cases, and so
-     * may be useful as a form of "tryUnlock".
+     * 如果锁状态与给定的戳记匹配，则如果戳记表示持有锁，则释放它并返回一个观察戳记。
+     * 或者，如果是乐观读取，则在验证后返回。该方法在所有其他情况下都返回0，
+     * 因此可以作为“tryUnlock”的一种形式使用。
      *
      * @param stamp a stamp
      * @return a valid optimistic read stamp, or zero on failure
@@ -700,46 +660,48 @@ public class StampedLock implements java.io.Serializable {
         long a = stamp & ABITS, m, s, next; WNode h;
         U.loadFence();
         for (;;) {
+            // 锁记录相等
             if (((s = state) & SBITS) != (stamp & SBITS))
                 break;
-            if ((m = s & ABITS) == 0L) {
+            if ((m = s & ABITS) == 0L) { // 无锁
                 if (a != 0L)
                     break;
-                return s;
+                return s; // 返回
             }
-            else if (m == WBIT) {
+            else if (m == WBIT) { // 写锁
                 if (a != m)
                     break;
-                state = next = (s += WBIT) == 0L ? ORIGIN : s;
+                state = next = (s += WBIT) == 0L ? ORIGIN : s; // 记录写记录，无锁的话返回ORIGIN，有锁返回之前值
+                // 头节点不为空，并且头结点的状态不为0
                 if ((h = whead) != null && h.status != 0)
-                    release(h);
+                    release(h); // 释放
                 return next;
             }
-            else if (a == 0L || a >= WBIT)
+            else if (a == 0L || a >= WBIT) // 无锁退出
                 break;
-            else if (m < RFULL) {
-                if (U.compareAndSwapLong(this, STATE, s, next = s - RUNIT)) {
+            else if (m < RFULL) { // 读锁未溢出
+                if (U.compareAndSwapLong(this, STATE, s, next = s - RUNIT)) { // 读锁-1
                     if (m == RUNIT && (h = whead) != null && h.status != 0)
-                        release(h);
+                        release(h); // 若读锁全部解锁，则释放下个节点。
                     return next & SBITS;
                 }
             }
-            else if ((next = tryDecReaderOverflow(s)) != 0L)
+            else if ((next = tryDecReaderOverflow(s)) != 0L) // 处理溢出
                 return next & SBITS;
         }
         return 0L;
     }
 
     /**
-     * Releases the write lock if it is held, without requiring a
-     * stamp value. This method may be useful for recovery after
-     * errors.
+     * 如果持有写锁，则释放它，而不需要戳记值。此方法对于错误后的恢复可能很有用。
      *
      * @return {@code true} if the lock was held, else false
      */
-    public boolean tryUnlockWrite() {
+    public boolean tryUnlockWrite() { // 无需传入stamp释放写锁
         long s; WNode h;
+        // 如果当前不是写状态，则释放失败
         if (((s = state) & WBIT) != 0L) {
+            // 释放，高位添加记录
             state = (s += WBIT) == 0L ? ORIGIN : s;
             if ((h = whead) != null && h.status != 0)
                 release(h);
@@ -749,9 +711,7 @@ public class StampedLock implements java.io.Serializable {
     }
 
     /**
-     * Releases one hold of the read lock if it is held, without
-     * requiring a stamp value. This method may be useful for recovery
-     * after errors.
+     * 如果持有读锁，则释放该读锁的一次持有，而不需要戳记值。此方法对于错误后的恢复可能很有用。
      *
      * @return {@code true} if the read lock was held, else false
      */
@@ -774,8 +734,7 @@ public class StampedLock implements java.io.Serializable {
     // status monitoring methods
 
     /**
-     * Returns combined state-held and overflow read count for given
-     * state s.
+     * 返回给定状态的组合状态保持数和溢出读计数。
      */
     private int getReadLockCount(long s) {
         long readers;
@@ -785,7 +744,7 @@ public class StampedLock implements java.io.Serializable {
     }
 
     /**
-     * Returns {@code true} if the lock is currently held exclusively.
+     * 如果锁当前被独占，则返回true。
      *
      * @return {@code true} if the lock is currently held exclusively
      */
@@ -794,7 +753,7 @@ public class StampedLock implements java.io.Serializable {
     }
 
     /**
-     * Returns {@code true} if the lock is currently held non-exclusively.
+     * 如果锁当前非独占地持有，则返回true。
      *
      * @return {@code true} if the lock is currently held non-exclusively
      */
@@ -803,9 +762,7 @@ public class StampedLock implements java.io.Serializable {
     }
 
     /**
-     * Queries the number of read locks held for this lock. This
-     * method is designed for use in monitoring system state, not for
-     * synchronization control.
+     * 查询为该锁持有的读锁的数量。该方法用于监控系统状态，不用于同步控制。
      * @return the number of read locks held
      */
     public int getReadLockCount() {
@@ -813,11 +770,8 @@ public class StampedLock implements java.io.Serializable {
     }
 
     /**
-     * Returns a string identifying this lock, as well as its lock
-     * state.  The state, in brackets, includes the String {@code
-     * "Unlocked"} or the String {@code "Write-locked"} or the String
-     * {@code "Read-locks:"} followed by the current number of
-     * read-locks held.
+     * 返回标识此锁的字符串及其锁状态。
+     * 括号中的状态包括字符串“解锁”或字符串“写锁”或字符串“读锁”:后跟当前持有的读锁数量。
      *
      * @return a string identifying this lock, as well as its lock state
      */
@@ -832,12 +786,10 @@ public class StampedLock implements java.io.Serializable {
     // views
 
     /**
-     * Returns a plain {@link Lock} view of this StampedLock in which
-     * the {@link Lock#lock} method is mapped to {@link #readLock},
-     * and similarly for other methods. The returned Lock does not
-     * support a {@link Condition}; method {@link
-     * Lock#newCondition()} throws {@code
-     * UnsupportedOperationException}.
+     * 返回此StampedLock的普通{@link Lock}视图，其中{@link Lock# Lock}方法映射到
+     * {@link #readLock}，其他方法也类似。
+     * 返回的锁不支持{@link条件};方法{@link Lock#newCondition()}抛出
+     * {@code UnsupportedOperationException}。
      *
      * @return the lock
      */
@@ -848,12 +800,10 @@ public class StampedLock implements java.io.Serializable {
     }
 
     /**
-     * Returns a plain {@link Lock} view of this StampedLock in which
-     * the {@link Lock#lock} method is mapped to {@link #writeLock},
-     * and similarly for other methods. The returned Lock does not
-     * support a {@link Condition}; method {@link
-     * Lock#newCondition()} throws {@code
-     * UnsupportedOperationException}.
+     * 返回此StampedLock的普通{@link Lock}视图，其中{@link Lock# Lock}方法映射到
+     * {@link #writeLock}，其他方法也类似。
+     * 返回的锁不支持{@link条件};方法{@link Lock#newCondition()}抛出
+     * {@code UnsupportedOperationException}。
      *
      * @return the lock
      */
@@ -864,10 +814,9 @@ public class StampedLock implements java.io.Serializable {
     }
 
     /**
-     * Returns a {@link ReadWriteLock} view of this StampedLock in
-     * which the {@link ReadWriteLock#readLock()} method is mapped to
-     * {@link #asReadLock()}, and {@link ReadWriteLock#writeLock()} to
-     * {@link #asWriteLock()}.
+     * 返回此StampedLock的{@link ReadWriteLock}视图，其中
+     * {@link ReadWriteLock#readLock()}方法映射到{@link #asReadLock()}，
+     * {@link ReadWriteLock#writeLock()}映射到{@link #asWriteLock()}。
      *
      * @return the lock
      */
@@ -879,6 +828,7 @@ public class StampedLock implements java.io.Serializable {
 
     // view classes
 
+    // 读锁视图
     final class ReadLockView implements Lock {
         public void lock() { readLock(); }
         public void lockInterruptibly() throws InterruptedException {
@@ -890,11 +840,11 @@ public class StampedLock implements java.io.Serializable {
             return tryReadLock(time, unit) != 0L;
         }
         public void unlock() { unstampedUnlockRead(); }
-        public Condition newCondition() {
+        public Condition newCondition() { // 不支持
             throw new UnsupportedOperationException();
         }
     }
-
+    // 写锁视图
     final class WriteLockView implements Lock {
         public void lock() { writeLock(); }
         public void lockInterruptibly() throws InterruptedException {
@@ -906,12 +856,12 @@ public class StampedLock implements java.io.Serializable {
             return tryWriteLock(time, unit) != 0L;
         }
         public void unlock() { unstampedUnlockWrite(); }
-        public Condition newCondition() {
+        public Condition newCondition() { // 不支持
             throw new UnsupportedOperationException();
         }
     }
 
-    final class ReadWriteLockView implements ReadWriteLock {
+    final class ReadWriteLockView implements ReadWriteLock { // 实现读写锁
         public Lock readLock() { return asReadLock(); }
         public Lock writeLock() { return asWriteLock(); }
     }
@@ -954,22 +904,24 @@ public class StampedLock implements java.io.Serializable {
     // internals
 
     /**
-     * Tries to increment readerOverflow by first setting state
-     * access bits value to RBITS, indicating hold of spinlock,
-     * then updating, then releasing.
+     * 尝试通过首先将状态访问位值设置为RBITS来增加readerOverflow，表示持有自旋锁，然后更新，然后释放。
      *
      * @param s a reader overflow stamp: (s & ABITS) >= RFULL
      * @return new stamp on success, else zero
      */
     private long tryIncReaderOverflow(long s) {
         // assert (s & ABITS) >= RFULL;
+        // 如果读锁溢出
         if ((s & ABITS) == RFULL) {
+            // 读锁设满127
             if (U.compareAndSwapLong(this, STATE, s, s | RBITS)) {
+                // 溢出+1
                 ++readerOverflow;
+                // state为原值
                 state = s;
-                return s;
+                return s; // 返回原值
             }
-        }
+        } // 若并发情况下不满了，则随机让步
         else if ((LockSupport.nextSecondarySeed() &
                   OVERFLOW_YIELD_RATE) == 0)
             Thread.yield();
@@ -977,26 +929,32 @@ public class StampedLock implements java.io.Serializable {
     }
 
     /**
-     * Tries to decrement readerOverflow.
+     * 尝试递减readerOverflow。
      *
      * @param s a reader overflow stamp: (s & ABITS) >= RFULL
      * @return new stamp on success, else zero
      */
     private long tryDecReaderOverflow(long s) {
         // assert (s & ABITS) >= RFULL;
+        // 如果当前读模式已满，
         if ((s & ABITS) == RFULL) {
+            // 先将state设满127
             if (U.compareAndSwapLong(this, STATE, s, s | RBITS)) {
                 int r; long next;
+                // 如果当前当前记录溢出数大于0
                 if ((r = readerOverflow) > 0) {
+                    // 溢出数减1
                     readerOverflow = r - 1;
+                    // 原来state
                     next = s;
                 }
                 else
+                    // 否则读锁记录-1
                     next = s - RUNIT;
                  state = next;
                  return next;
             }
-        }
+        } // 如果并发释放读锁，随机让步
         else if ((LockSupport.nextSecondarySeed() &
                   OVERFLOW_YIELD_RATE) == 0)
             Thread.yield();
@@ -1004,21 +962,22 @@ public class StampedLock implements java.io.Serializable {
     }
 
     /**
-     * Wakes up the successor of h (normally whead). This is normally
-     * just h.next, but may require traversal from wtail if next
-     * pointers are lagging. This may fail to wake up an acquiring
-     * thread when one or more have been cancelled, but the cancel
-     * methods themselves provide extra safeguards to ensure liveness.
+     * 唤醒h的继承者(通常是whead)。
+     * 这通常是h。但是，如果下一个指针滞后，则可能需要从wtail遍历。
+     * 当一个或多个线程被取消时，这可能无法唤醒获取线程，但是取消方法本身提供了额外的保护措施来确保活性。
      */
     private void release(WNode h) {
-        if (h != null) {
+        if (h != null) { // 头节点不为空
             WNode q; Thread w;
+            // 如果头结点的状态为等待状态，将其状态设置为0
             U.compareAndSwapInt(h, WSTATUS, WAITING, 0);
+            // 从尾结点开始，到头节点为止，寻找状态为等待状态或者为0的有效节点
             if ((q = h.next) == null || q.status == CANCELLED) {
                 for (WNode t = wtail; t != null && t != h; t = t.prev)
                     if (t.status <= 0)
                         q = t;
             }
+            // 如果寻找的有效节点不为空，并且其对应的线程也不为空，唤醒其线程
             if (q != null && (w = q.thread) != null)
                 U.unpark(w);
         }
@@ -1027,99 +986,113 @@ public class StampedLock implements java.io.Serializable {
     /**
      * See above for explanation.
      *
-     * @param interruptible true if should check interrupts and if so
+     * @param interruptible t如果检查中断 and if so
      * return INTERRUPTED
      * @param deadline if nonzero, the System.nanoTime value to timeout
      * at (and return zero)
-     * @return next state, or INTERRUPTED
+     * @return 下一个状态, or 中断
      */
     private long acquireWrite(boolean interruptible, long deadline) {
         WNode node = null, p;
-        for (int spins = -1;;) { // spin while enqueuing
+        for (int spins = -1;;) { // 入队时自旋
             long m, s, ns;
-            if ((m = (s = state) & ABITS) == 0L) {
+            if ((m = (s = state) & ABITS) == 0L) { // 若当前恰好无锁，则设置写锁后返回
                 if (U.compareAndSwapLong(this, STATE, s, ns = s + WBIT))
                     return ns;
             }
-            else if (spins < 0)
-                spins = (m == WBIT && wtail == whead) ? SPINS : 0;
-            else if (spins > 0) {
-                if (LockSupport.nextSecondarySeed() >= 0)
-                    --spins;
+            else if (spins < 0) // 如果当前锁被占用了
+                // 队列里没东西的话，获取自旋次数
+                spins = (m == WBIT && wtail == whead) ? SPINS : 0; // 写锁，当前无队列，自旋次数255，否则0
+            else if (spins > 0) { // 重试
+                if (LockSupport.nextSecondarySeed() >= 0)// 不知道有啥子用，永远返回正数
+                    --spins; // 重试次数减一
             }
-            else if ((p = wtail) == null) { // initialize queue
-                WNode hd = new WNode(WMODE, null);
-                if (U.compareAndSwapObject(this, WHEAD, null, hd))
-                    wtail = hd;
+            // 重试结束，开始插入队列
+            else if ((p = wtail) == null) { // 初始化队列
+                WNode hd = new WNode(WMODE, null); // 无前任的节点
+                if (U.compareAndSwapObject(this, WHEAD, null, hd)) // 替换队列头结点
+                    wtail = hd; // 尾节点=头结点
             }
             else if (node == null)
-                node = new WNode(WMODE, p);
-            else if (node.prev != p)
+                node = new WNode(WMODE, p); // 头节点后的新节点
+            else if (node.prev != p) // 尾节点改变，重新设置
                 node.prev = p;
-            else if (U.compareAndSwapObject(this, WTAIL, p, node)) {
+            else if (U.compareAndSwapObject(this, WTAIL, p, node)) { // 设置尾节点
                 p.next = node;
-                break;
+                break; // 进入队列成功，跳出循环
             }
         }
-
+// 循环阻塞当前线程
         for (int spins = -1;;) {
             WNode h, np, pp; int ps;
-            if ((h = whead) == p) {
+            if ((h = whead) == p) { // 若头结点等于尾节点
                 if (spins < 0)
-                    spins = HEAD_SPINS;
-                else if (spins < MAX_HEAD_SPINS)
+                    spins = HEAD_SPINS; // 设置自旋的值
+                else if (spins < MAX_HEAD_SPINS) // 如果自旋小于自旋最大值，则扩大两倍
                     spins <<= 1;
-                for (int k = spins;;) { // spin at head
+                for (int k = spins;;) { // 从头部自旋
                     long s, ns;
-                    if (((s = state) & ABITS) == 0L) {
+                    if (((s = state) & ABITS) == 0L) { // 若无锁。则获取锁
                         if (U.compareAndSwapLong(this, STATE, s,
                                                  ns = s + WBIT)) {
-                            whead = node;
-                            node.prev = null;
-                            return ns;
+                            whead = node; // 头节点设置为当前节点
+                            node.prev = null; // 帮助gc
+                            return ns; // 返回当前state
                         }
                     }
                     else if (LockSupport.nextSecondarySeed() >= 0 &&
                              --k <= 0)
-                        break;
+                        break; // 自旋超时，跳出循环
                 }
             }
-            else if (h != null) { // help release stale waiters
+            else if (h != null) { // 若头节点不为空，释放等待者
                 WNode c; Thread w;
-                while ((c = h.cowait) != null) {
+                // 如果头结点的cowait队列不为空，唤醒cowait队列
+                while ((c = h.cowait) != null) { // 循环唤醒等待线程
                     if (U.compareAndSwapObject(h, WCOWAIT, c, c.cowait) &&
                         (w = c.thread) != null)
-                        U.unpark(w);
+                        U.unpark(w); // 释放读线程
                 }
             }
-            if (whead == h) {
+            if (whead == h) { // 如果头结点不变
+                // 如果当前节点的前节点不是尾结点
                 if ((np = node.prev) != p) {
                     if (np != null)
                         (p = np).next = node;   // stale
                 }
+                // 如果当前节点的前节点状态为0，将其前驱节点设置为等待状态
                 else if ((ps = p.status) == 0)
                     U.compareAndSwapInt(p, WSTATUS, 0, WAITING);
+                    // 如果当前节点前节点状态为取消
                 else if (ps == CANCELLED) {
+                    // 重新设置当前节点的前驱节点
                     if ((pp = p.prev) != null) {
                         node.prev = pp;
                         pp.next = node;
                     }
                 }
                 else {
-                    long time; // 0 argument to park means no timeout
+                    long time; // 如果传入时间为0，阻塞直到唤醒
                     if (deadline == 0L)
                         time = 0L;
+                        // 如果时间已超时，取消当前节点
                     else if ((time = deadline - System.nanoTime()) <= 0L)
                         return cancelWaiter(node, node, false);
+                    // 获取当前线程
                     Thread wt = Thread.currentThread();
+                    // 设置线程Thread的parkblocker属性，表示当前线程被谁阻塞，用于监控线程使用
                     U.putObject(wt, PARKBLOCKER, this);
                     node.thread = wt;
                     if (p.status < 0 && (p != h || (state & ABITS) != 0L) &&
                         whead == h && node.prev == p)
-                        U.park(false, time);  // emulate LockSupport.park
+                        // 阻塞当前线程
+                        U.park(false, time);  // 类似 LockSupport.park
+                    // 当前节点线程为空
                     node.thread = null;
                     U.putObject(wt, PARKBLOCKER, null);
+                    // 如果传入的参数interruptible为true，并且当前线程中断，取消当前节点
                     if (interruptible && Thread.interrupted())
+                        // 取消节点
                         return cancelWaiter(node, node, true);
                 }
             }
@@ -1129,7 +1102,7 @@ public class StampedLock implements java.io.Serializable {
     /**
      * See above for explanation.
      *
-     * @param interruptible true if should check interrupts and if so
+     * @param interruptible true 如果检查中断为true
      * return INTERRUPTED
      * @param deadline if nonzero, the System.nanoTime value to timeout
      * at (and return zero)
@@ -1139,82 +1112,95 @@ public class StampedLock implements java.io.Serializable {
         WNode node = null, p;
         for (int spins = -1;;) {
             WNode h;
+            // 如果头结点等于尾结点，则自旋
             if ((h = whead) == (p = wtail)) {
                 for (long m, s, ns;;) {
+                    // 如果读锁未溢出则设置读+1成功 ，则返回获取成功
                     if ((m = (s = state) & ABITS) < RFULL ?
                         U.compareAndSwapLong(this, STATE, s, ns = s + RUNIT) :
                         (m < WBIT && (ns = tryIncReaderOverflow(s)) != 0L))
                         return ns;
-                    else if (m >= WBIT) {
+                    else if (m >= WBIT) { // 自旋-1
                         if (spins > 0) {
                             if (LockSupport.nextSecondarySeed() >= 0)
                                 --spins;
                         }
                         else {
-                            if (spins == 0) {
+                            if (spins == 0) { // 自旋减到0
                                 WNode nh = whead, np = wtail;
+                                // 如果头尾节点未改变，或头尾节点不相等，退出自旋
                                 if ((nh == h && np == p) || (h = nh) != (p = np))
                                     break;
                             }
-                            spins = SPINS;
+                            spins = SPINS; // 自旋初始值
                         }
                     }
                 }
             }
-            if (p == null) { // initialize queue
+            if (p == null) { // 如果队列为null，初始化队列
                 WNode hd = new WNode(WMODE, null);
-                if (U.compareAndSwapObject(this, WHEAD, null, hd))
+                if (U.compareAndSwapObject(this, WHEAD, null, hd)) // 设置头节点
                     wtail = hd;
             }
-            else if (node == null)
+            else if (node == null) // 若当前节点为空，构造当前节点
                 node = new WNode(RMODE, p);
+                // 若头尾节点相等，当前锁状态不为读锁状态
             else if (h == p || p.mode != RMODE) {
-                if (node.prev != p)
+                if (node.prev != p) // 设置当前节点
                     node.prev = p;
                 else if (U.compareAndSwapObject(this, WTAIL, p, node)) {
                     p.next = node;
-                    break;
+                    break; // 入队成功，跳出
                 }
-            }
+            } // 将当前节点加入尾结点的cowait队列中，如果失败，则将当前节点的cowait设为null
             else if (!U.compareAndSwapObject(p, WCOWAIT,
                                              node.cowait = p.cowait, node))
                 node.cowait = null;
-            else {
+            else { // 如果当前队列不为空，当前节点不为空，并且当前为读锁状态，并且加入尾队列失败
                 for (;;) {
                     WNode pp, c; Thread w;
+                    // 如果头节点的cowait队列不为空，并且其线程也不为null，将其cowait唤醒
                     if ((h = whead) != null && (c = h.cowait) != null &&
                         U.compareAndSwapObject(h, WCOWAIT, c, c.cowait) &&
                         (w = c.thread) != null) // help release
-                        U.unpark(w);
+                        U.unpark(w); // 唤醒cow头ait队列中的节点线程
+                    // 如果当前头节点为尾结点的前驱节点，或者头尾节点相等，或者尾结点的前节点为空
                     if (h == (pp = p.prev) || h == p || pp == null) {
                         long m, s, ns;
-                        do {
+                        do { // 判断当前是否属于读状态，有没有溢出，读锁加1·
                             if ((m = (s = state) & ABITS) < RFULL ?
                                 U.compareAndSwapLong(this, STATE, s,
                                                      ns = s + RUNIT) :
                                 (m < WBIT &&
-                                 (ns = tryIncReaderOverflow(s)) != 0L))
+                                 (ns = tryIncReaderOverflow(s)) != 0L)) // 否则进行溢出操作
                                 return ns;
-                        } while (m < WBIT);
+                        } while (m < WBIT); // 当前state不是写模式，才能进行重试
                     }
-                    if (whead == h && p.prev == pp) {
+                    if (whead == h && p.prev == pp) { // 如果头节点没有改变，并且尾结点的前驱节点不变
                         long time;
+                        // 如果尾结点的前驱节点为空，或头尾节点相等，或尾结点的状态为取消
                         if (pp == null || h == p || p.status > 0) {
+                            // 将当前节点设置为空，退出循环
                             node = null; // throw away
                             break;
                         }
+                        // 如果传入的超时时间已经过期，将当前节点取消
                         if (deadline == 0L)
                             time = 0L;
                         else if ((time = deadline - System.nanoTime()) <= 0L)
                             return cancelWaiter(node, p, false);
+                        // 获取当前线程，设置阻塞对象
                         Thread wt = Thread.currentThread();
                         U.putObject(wt, PARKBLOCKER, this);
                         node.thread = wt;
                         if ((h != pp || (state & ABITS) == WBIT) &&
                             whead == h && p.prev == pp)
+                            // 阻塞当前节点
                             U.park(false, time);
                         node.thread = null;
+                        // 阻塞结束，阻塞类设为null
                         U.putObject(wt, PARKBLOCKER, null);
+                        // 中断的话，取消等待
                         if (interruptible && Thread.interrupted())
                             return cancelWaiter(node, p, true);
                     }
@@ -1224,16 +1210,17 @@ public class StampedLock implements java.io.Serializable {
 
         for (int spins = -1;;) {
             WNode h, np, pp; int ps;
+            // 如果头尾节点相等
             if ((h = whead) == p) {
                 if (spins < 0)
-                    spins = HEAD_SPINS;
-                else if (spins < MAX_HEAD_SPINS)
+                    spins = HEAD_SPINS; // 自旋初始值
+                else if (spins < MAX_HEAD_SPINS) // spin小于最大自旋，扩大二倍
                     spins <<= 1;
                 for (int k = spins;;) { // spin at head
                     long m, s, ns;
-                    if ((m = (s = state) & ABITS) < RFULL ?
-                        U.compareAndSwapLong(this, STATE, s, ns = s + RUNIT) :
-                        (m < WBIT && (ns = tryIncReaderOverflow(s)) != 0L)) {
+                    if ((m = (s = state) & ABITS) < RFULL ? // 若读锁小于溢出值
+                        U.compareAndSwapLong(this, STATE, s, ns = s + RUNIT) : // 获取成功
+                        (m < WBIT && (ns = tryIncReaderOverflow(s)) != 0L)) { // 处理溢出值
                         WNode c; Thread w;
                         whead = node;
                         node.prev = null;
@@ -1241,39 +1228,41 @@ public class StampedLock implements java.io.Serializable {
                             if (U.compareAndSwapObject(node, WCOWAIT,
                                                        c, c.cowait) &&
                                 (w = c.thread) != null)
+                                // 释放当前节点
                                 U.unpark(w);
                         }
-                        return ns;
+                        return ns; // 返回成功
                     }
-                    else if (m >= WBIT &&
+                    else if (m >= WBIT && // 若当前为写状态，重试
                              LockSupport.nextSecondarySeed() >= 0 && --k <= 0)
                         break;
                 }
             }
-            else if (h != null) {
+            else if (h != null) { // 如果头结点不为空
                 WNode c; Thread w;
-                while ((c = h.cowait) != null) {
+                while ((c = h.cowait) != null) { // 头结点的队列不为空，循环唤醒cowait队列中，线程不为空的线程
                     if (U.compareAndSwapObject(h, WCOWAIT, c, c.cowait) &&
                         (w = c.thread) != null)
-                        U.unpark(w);
+                        U.unpark(w); // 唤醒
                 }
             }
-            if (whead == h) {
-                if ((np = node.prev) != p) {
+            if (whead == h) { // 若头结点没改变
+                if ((np = node.prev) != p) { // 如果当前节点的前节点不等于尾结点
+                    // 前节点不为空
                     if (np != null)
                         (p = np).next = node;   // stale
                 }
-                else if ((ps = p.status) == 0)
-                    U.compareAndSwapInt(p, WSTATUS, 0, WAITING);
-                else if (ps == CANCELLED) {
-                    if ((pp = p.prev) != null) {
+                else if ((ps = p.status) == 0) // 如果当前节点的前驱节点状态为0，
+                    U.compareAndSwapInt(p, WSTATUS, 0, WAITING); // 状态修改为等待状态
+                else if (ps == CANCELLED) { // 若是取消状态
+                    if ((pp = p.prev) != null) { // 跳过
                         node.prev = pp;
                         pp.next = node;
                     }
                 }
                 else {
                     long time;
-                    if (deadline == 0L)
+                    if (deadline == 0L) // 超时取消
                         time = 0L;
                     else if ((time = deadline - System.nanoTime()) <= 0L)
                         return cancelWaiter(node, node, false);
@@ -1283,26 +1272,22 @@ public class StampedLock implements java.io.Serializable {
                     if (p.status < 0 &&
                         (p != h || (state & ABITS) == WBIT) &&
                         whead == h && node.prev == p)
-                        U.park(false, time);
-                    node.thread = null;
-                    U.putObject(wt, PARKBLOCKER, null);
-                    if (interruptible && Thread.interrupted())
-                        return cancelWaiter(node, node, true);
+                        U.park(false, time); // 阻塞
+                    node.thread = null; // 唤醒后设置为空
+                    U.putObject(wt, PARKBLOCKER, null); // 唤醒后设置为空
+                    if (interruptible && Thread.interrupted()) // 中断的话
+                        return cancelWaiter(node, node, true); // 取消等待节点
                 }
             }
         }
     }
 
     /**
-     * If node non-null, forces cancel status and unsplices it from
-     * queue if possible and wakes up any cowaiters (of the node, or
-     * group, as applicable), and in any case helps release current
-     * first waiter if lock is free. (Calling with null arguments
-     * serves as a conditional form of release, which is not currently
-     * needed but may be needed under possible future cancellation
-     * policies). This is a variant of cancellation methods in
-     * AbstractQueuedSynchronizer (see its detailed explanation in AQS
-     * internal documentation).
+     * 如果节点非空，则强制取消状态并在可能的情况下将其从队列中解拼接出来，
+     * 并唤醒任何cowaiter(节点或组的cowaiter，视情况而定)，在任何情况下，
+     * 如果锁是空闲的，则帮助释放当前的first waiter。(使用null参数调用是一种条件释放形式，
+     * 目前还不需要，但是在将来可能的取消策略下可能需要)。
+     * 这是AbstractQueuedSynchronizer中取消方法的一种变体(参见AQS内部文档中的详细说明)。
      *
      * @param node if nonnull, the waiter
      * @param group either node or the group node is cowaiting with
@@ -1310,10 +1295,12 @@ public class StampedLock implements java.io.Serializable {
      * @return INTERRUPTED if interrupted or Thread.interrupted, else zero
      */
     private long cancelWaiter(WNode node, WNode group, boolean interrupted) {
+        // node和group为同一节点，要取消的节点，都不为null时。
         if (node != null && group != null) {
             Thread w;
-            node.status = CANCELLED;
+            node.status = CANCELLED; // 将当前节点的状态设置为取消状态
             // unsplice cancelled nodes from group
+            // 如果当前要取消的节点的cowait队列不为空，将其cowait队列中取消的节点去除
             for (WNode p = group, q; (q = p.cowait) != null;) {
                 if (q.status == CANCELLED) {
                     U.compareAndSwapObject(p, WCOWAIT, q, q.cowait);
@@ -1322,11 +1309,14 @@ public class StampedLock implements java.io.Serializable {
                 else
                     p = q;
             }
+            // group和node为同一节点
             if (group == node) {
+                // 唤醒状态没有取消的cowait队列中的节点
                 for (WNode r = group.cowait; r != null; r = r.cowait) {
                     if ((w = r.thread) != null)
                         U.unpark(w);       // wake up uncancelled co-waiters
                 }
+                // 将其当前取消节点的前驱节点的下一个节点设置为当前取消节点的next节点
                 for (WNode pred = node.prev; pred != null; ) { // unsplice
                     WNode succ, pp;        // find valid successor
                     while ((succ = node.next) == null ||

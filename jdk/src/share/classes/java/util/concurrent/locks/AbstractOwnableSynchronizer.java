@@ -36,13 +36,9 @@
 package java.util.concurrent.locks;
 
 /**
- * A synchronizer that may be exclusively owned by a thread.  This
- * class provides a basis for creating locks and related synchronizers
- * that may entail a notion of ownership.  The
- * {@code AbstractOwnableSynchronizer} class itself does not manage or
- * use this information. However, subclasses and tools may use
- * appropriately maintained values to help control and monitor access
- * and provide diagnostics.
+ * 一种同步器，可以由一个线程独占。该类提供了创建锁和相关同步器的基础，
+ * 这些同步器可能包含所有权的概念。AbstractOwnableSynchronizer类本身并不管理或使用这些信息。
+ * 但是，子类和工具可以使用适当维护的值来帮助控制和监视访问并提供诊断。
  *
  * @since 1.6
  * @author Doug Lea
@@ -54,19 +50,18 @@ public abstract class AbstractOwnableSynchronizer
     private static final long serialVersionUID = 3737899427754241961L;
 
     /**
-     * Empty constructor for use by subclasses.
+     * 子类使用的空构造方法
      */
     protected AbstractOwnableSynchronizer() { }
 
     /**
-     * The current owner of exclusive mode synchronization.
+     * 排它锁的拥有者
      */
     private transient Thread exclusiveOwnerThread;
 
     /**
-     * Sets the thread that currently owns exclusive access.
-     * A {@code null} argument indicates that no thread owns access.
-     * This method does not otherwise impose any synchronization or
+     * 设置当前拥有独占访问权的线程。参数{@code null}表示没有线程拥有访问权限。
+     * 此方法不强制任何同步或{@code volatile}字段访问。@param线程所有者线程
      * {@code volatile} field accesses.
      * @param thread the owner thread
      */
@@ -75,9 +70,8 @@ public abstract class AbstractOwnableSynchronizer
     }
 
     /**
-     * Returns the thread last set by {@code setExclusiveOwnerThread},
-     * or {@code null} if never set.  This method does not otherwise
-     * impose any synchronization or {@code volatile} field accesses.
+     * 返回{@code setExclusiveOwnerThread}设置的最后一个线程集，
+     * 如果没有设置则返回{@code null}。@返回所有者线程
      * @return the owner thread
      */
     protected final Thread getExclusiveOwnerThread() {
