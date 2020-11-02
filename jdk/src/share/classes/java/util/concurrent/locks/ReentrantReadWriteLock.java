@@ -38,61 +38,61 @@ import java.util.concurrent.TimeUnit;
 import java.util.Collection;
 
 /**
- * ReadWriteLockµÄÊµÏÖ£¬Ö§³ÖÓëReentrantLockÀàËÆµÄÓïÒå¡£
- * <p>¸ÃÀà¾ßÓĞÒÔÏÂÊôĞÔ:
+ * ReadWriteLockçš„å®ç°ï¼Œæ”¯æŒä¸ReentrantLockç±»ä¼¼çš„è¯­ä¹‰ã€‚
+ * <p>è¯¥ç±»å…·æœ‰ä»¥ä¸‹å±æ€§:
  *
  * <ul>
- * <li><b>»ñµÃË³Ğò£º</b>
+ * <li><b>è·å¾—é¡ºåºï¼š</b>
  *
- * <p>¸ÃÀà²»Ç¿ÖÆ¶ÔËø·ÃÎÊ½øĞĞ¶ÁĞ´Æ÷ÓÅÏÈ¼¶ÅÅĞò¡£µ«ÊÇ£¬ËüÖ§³ÖÒ»¸ö¿ÉÑ¡µÄ¹«Æ½²ßÂÔ¡£
+ * <p>è¯¥ç±»ä¸å¼ºåˆ¶å¯¹é”è®¿é—®è¿›è¡Œè¯»å†™å™¨ä¼˜å…ˆçº§æ’åºã€‚ä½†æ˜¯ï¼Œå®ƒæ”¯æŒä¸€ä¸ªå¯é€‰çš„å…¬å¹³ç­–ç•¥ã€‚
  *
  * <dl>
  * <dt><b><i>Non-fair mode (default)</i></b>
- * <dd>µ±¹¹ÔìÎª·Ç¹«Æ½(Ä¬ÈÏ)Ê±£¬¶ÁĞ´ËøµÄÌõÄ¿Ë³ĞòÊÇÎ´Ö¸¶¨µÄ£¬ÕâÈ¡¾öÓÚ¿ÉÖØÈëĞÔÔ¼Êø¡£
- * ³ÖĞøÕùÓÃµÄ·Ç¹«Æ½Ëø¿ÉÄÜÎŞÏŞÆÚµØÑÓ³ÙÒ»¸ö»ò¶à¸ö¶ÁĞ´Ïß³Ì£¬µ«Í¨³£¾ßÓĞ±È¹«Æ½Ëø¸ü¸ßµÄÍÌÍÂÁ¿¡£
+ * <dd>å½“æ„é€ ä¸ºéå…¬å¹³(é»˜è®¤)æ—¶ï¼Œè¯»å†™é”çš„æ¡ç›®é¡ºåºæ˜¯æœªæŒ‡å®šçš„ï¼Œè¿™å–å†³äºå¯é‡å…¥æ€§çº¦æŸã€‚
+ * æŒç»­äº‰ç”¨çš„éå…¬å¹³é”å¯èƒ½æ— é™æœŸåœ°å»¶è¿Ÿä¸€ä¸ªæˆ–å¤šä¸ªè¯»å†™çº¿ç¨‹ï¼Œä½†é€šå¸¸å…·æœ‰æ¯”å…¬å¹³é”æ›´é«˜çš„ååé‡ã€‚
  *
  * <dt><b><i>Fair mode</i></b>
- * <dd>µ±¹¹ÔìÎª¹«Æ½Ê±£¬Ïß³ÌÊ¹ÓÃ½üËÆµ½´ïË³Ğò²ßÂÔ¾ºÕù½øÈë¡£
- * µ±µ±Ç°³ÖÓĞµÄËø±»ÊÍ·ÅÊ±£¬ÒªÃ´ÎªµÈ´ıÊ±¼ä×î³¤µÄĞ´Ïß³Ì·ÖÅäĞ´Ëø£¬
- * ÒªÃ´ÎªÒ»×éµÈ´ıÊ±¼ä±ÈËùÓĞµÈ´ıµÄĞ´Ïß³Ì¶¼³¤µÄ¶ÁÏß³Ì·ÖÅä¶ÁËø¡£
+ * <dd>å½“æ„é€ ä¸ºå…¬å¹³æ—¶ï¼Œçº¿ç¨‹ä½¿ç”¨è¿‘ä¼¼åˆ°è¾¾é¡ºåºç­–ç•¥ç«äº‰è¿›å…¥ã€‚
+ * å½“å½“å‰æŒæœ‰çš„é”è¢«é‡Šæ”¾æ—¶ï¼Œè¦ä¹ˆä¸ºç­‰å¾…æ—¶é—´æœ€é•¿çš„å†™çº¿ç¨‹åˆ†é…å†™é”ï¼Œ
+ * è¦ä¹ˆä¸ºä¸€ç»„ç­‰å¾…æ—¶é—´æ¯”æ‰€æœ‰ç­‰å¾…çš„å†™çº¿ç¨‹éƒ½é•¿çš„è¯»çº¿ç¨‹åˆ†é…è¯»é”ã€‚
  *
- * <p>Èç¹û³ÖÓĞĞ´Ëø£¬»òÕßÓĞÒ»¸öÕıÔÚµÈ´ıµÄĞ´Ïß³Ì£¬ÄÇÃ´ÊÔÍ¼»ñÈ¡Ò»¸ö¹«Æ½µÄ¶ÁËø(·Çreentrantly)µÄÏß³Ì½«×èÈû¡£
- * ÔÚµ±Ç°×îÀÏµÄµÈ´ıĞ´Ïß³Ì»ñµÃ²¢ÊÍ·ÅĞ´ËøÖ®Ç°£¬Ïß³Ì²»»á»ñÈ¡¶ÁËø¡£
- * µ±È»£¬Èç¹ûÒ»¸öµÈ´ıµÄĞ´Ïß³Ì·ÅÆúÁËËüµÄµÈ´ı£¬ÁôÏÂÒ»¸ö»ò¶à¸ö¶ÁÏß³Ì×÷Îª¶ÓÁĞÖĞ×î³¤µÄµÈ´ıÏß³Ì£¬
- * ¶øĞ´ËøÊÇ¿ÕÏĞµÄ£¬ÄÇÃ´ÕâĞ©¶ÁÏß³Ì½«±»·ÖÅä¶ÁËø¡£
+ * <p>å¦‚æœæŒæœ‰å†™é”ï¼Œæˆ–è€…æœ‰ä¸€ä¸ªæ­£åœ¨ç­‰å¾…çš„å†™çº¿ç¨‹ï¼Œé‚£ä¹ˆè¯•å›¾è·å–ä¸€ä¸ªå…¬å¹³çš„è¯»é”(éreentrantly)çš„çº¿ç¨‹å°†é˜»å¡ã€‚
+ * åœ¨å½“å‰æœ€è€çš„ç­‰å¾…å†™çº¿ç¨‹è·å¾—å¹¶é‡Šæ”¾å†™é”ä¹‹å‰ï¼Œçº¿ç¨‹ä¸ä¼šè·å–è¯»é”ã€‚
+ * å½“ç„¶ï¼Œå¦‚æœä¸€ä¸ªç­‰å¾…çš„å†™çº¿ç¨‹æ”¾å¼ƒäº†å®ƒçš„ç­‰å¾…ï¼Œç•™ä¸‹ä¸€ä¸ªæˆ–å¤šä¸ªè¯»çº¿ç¨‹ä½œä¸ºé˜Ÿåˆ—ä¸­æœ€é•¿çš„ç­‰å¾…çº¿ç¨‹ï¼Œ
+ * è€Œå†™é”æ˜¯ç©ºé—²çš„ï¼Œé‚£ä¹ˆè¿™äº›è¯»çº¿ç¨‹å°†è¢«åˆ†é…è¯»é”ã€‚
  *
- * <p>³ı·Ç¶ÁËøºÍĞ´Ëø¶¼ÊÇ¿ÕÏĞµÄ(ÕâÒâÎ¶×ÅÃ»ÓĞµÈ´ıµÄÏß³Ì)£¬·ñÔòÊÔÍ¼»ñÈ¡Ò»¸ö¹«Æ½µÄĞ´Ëø(·Çreentrantly)µÄÏß³Ì½«×èÈû¡£
- * (×¢Òâ£¬·Ç×èÈûµÄReentrantReadWriteLock.ReadLock.tryLock()ºÍ
- * ReentrantReadWriteLock.WriteLock.tryLock()·½·¨²»×ñÊØÕâ¸ö¹«Æ½ÉèÖÃ£¬
- * ²¢ÇÒÔÚ¿ÉÄÜµÄÇé¿öÏÂ£¬²»¹ÜÕıÔÚµÈ´ıµÄÏß³ÌÈçºÎ£¬¶¼»áÁ¢¼´»ñÈ¡Ëø¡£)
+ * <p>é™¤éè¯»é”å’Œå†™é”éƒ½æ˜¯ç©ºé—²çš„(è¿™æ„å‘³ç€æ²¡æœ‰ç­‰å¾…çš„çº¿ç¨‹)ï¼Œå¦åˆ™è¯•å›¾è·å–ä¸€ä¸ªå…¬å¹³çš„å†™é”(éreentrantly)çš„çº¿ç¨‹å°†é˜»å¡ã€‚
+ * (æ³¨æ„ï¼Œéé˜»å¡çš„ReentrantReadWriteLock.ReadLock.tryLock()å’Œ
+ * ReentrantReadWriteLock.WriteLock.tryLock()æ–¹æ³•ä¸éµå®ˆè¿™ä¸ªå…¬å¹³è®¾ç½®ï¼Œ
+ * å¹¶ä¸”åœ¨å¯èƒ½çš„æƒ…å†µä¸‹ï¼Œä¸ç®¡æ­£åœ¨ç­‰å¾…çš„çº¿ç¨‹å¦‚ä½•ï¼Œéƒ½ä¼šç«‹å³è·å–é”ã€‚)
  * <p>
  * </dl>
  *
  * <li><b>Reentrancy</b>
  *
- * <p>Õâ¸öËøÔÊĞí¶ÁÈ¡Æ÷ºÍĞ´ÈëÆ÷ÒÔReentrantLockµÄĞÎÊ½ÖØĞÂ»ñÈ¡¶Á»òĞ´Ëø¡£
- * ÔÚĞ´Ïß³Ì³ÖÓĞµÄËùÓĞĞ´Ëø¶¼±»ÊÍ·ÅÖ®Ç°£¬²»¿ÉÖØÈë¶ÁÈ¡Æ÷ÊÇ²»ÔÊĞíµÄ¡£
- * ´ËÍâ£¬Ğ´ÈëÆ÷¿ÉÒÔ»ñµÃ¶ÁËø£¬µ«·´Ö®Ôò²»ĞĞ¡£ÔÚÆäËûÓ¦ÓÃ³ÌĞòÖĞ£¬
- * ¿ÉÖØÈëĞÔÔÚ¶ÔÔÚ¶ÁËøÏÂÖ´ĞĞ¶ÁµÄ·½·¨µÄµ÷ÓÃ»ò»Øµ÷ÆÚ¼ä±£³ÖĞ´ËøÊ±·Ç³£ÓĞÓÃ¡£
- * Èç¹ûÒ»¸ö¶ÁÈ¡Æ÷ÊÔÍ¼»ñÈ¡Ğ´Ëø£¬Ëü½«ÓÀÔ¶²»»á³É¹¦¡£
+ * <p>è¿™ä¸ªé”å…è®¸è¯»å–å™¨å’Œå†™å…¥å™¨ä»¥ReentrantLockçš„å½¢å¼é‡æ–°è·å–è¯»æˆ–å†™é”ã€‚
+ * åœ¨å†™çº¿ç¨‹æŒæœ‰çš„æ‰€æœ‰å†™é”éƒ½è¢«é‡Šæ”¾ä¹‹å‰ï¼Œä¸å¯é‡å…¥è¯»å–å™¨æ˜¯ä¸å…è®¸çš„ã€‚
+ * æ­¤å¤–ï¼Œå†™å…¥å™¨å¯ä»¥è·å¾—è¯»é”ï¼Œä½†åä¹‹åˆ™ä¸è¡Œã€‚åœ¨å…¶ä»–åº”ç”¨ç¨‹åºä¸­ï¼Œ
+ * å¯é‡å…¥æ€§åœ¨å¯¹åœ¨è¯»é”ä¸‹æ‰§è¡Œè¯»çš„æ–¹æ³•çš„è°ƒç”¨æˆ–å›è°ƒæœŸé—´ä¿æŒå†™é”æ—¶éå¸¸æœ‰ç”¨ã€‚
+ * å¦‚æœä¸€ä¸ªè¯»å–å™¨è¯•å›¾è·å–å†™é”ï¼Œå®ƒå°†æ°¸è¿œä¸ä¼šæˆåŠŸã€‚
  *
  *
  * <li><b>Lock downgrading</b>
- * <p>¿ÉÖØÈëĞÔ»¹ÔÊĞí´ÓĞ´Ëø½µ¼¶Îª¶ÁËø£¬·½·¨ÊÇ»ñÈ¡Ğ´Ëø£¬È»ºóÊÇ¶ÁËø£¬È»ºóÊÍ·ÅĞ´Ëø¡£µ«ÊÇ£¬´Ó¶ÁËøÉı¼¶µ½Ğ´ËøÊÇ²»¿ÉÄÜµÄ¡£
+ * <p>å¯é‡å…¥æ€§è¿˜å…è®¸ä»å†™é”é™çº§ä¸ºè¯»é”ï¼Œæ–¹æ³•æ˜¯è·å–å†™é”ï¼Œç„¶åæ˜¯è¯»é”ï¼Œç„¶åé‡Šæ”¾å†™é”ã€‚ä½†æ˜¯ï¼Œä»è¯»é”å‡çº§åˆ°å†™é”æ˜¯ä¸å¯èƒ½çš„ã€‚
  *
  * <li><b>Interruption of lock acquisition</b>
- * <p>¶ÁËøºÍĞ´Ëø¶¼Ö§³ÖÔÚËø»ñÈ¡ÆÚ¼äÖĞ¶Ï¡£
+ * <p>è¯»é”å’Œå†™é”éƒ½æ”¯æŒåœ¨é”è·å–æœŸé—´ä¸­æ–­ã€‚
  *
  * <li><b>{@link Condition} support</b>
- * <p>Ğ´ËøÌá¹©ÁËÒ»¸öÌõ¼şÊµÏÖ£¬ËüÔÚĞ´Ëø·½ÃæµÄĞĞÎªÓëReentrantLock.newcondition()
- * ÎªReentrantLockÌá¹©µÄÌõ¼şÊµÏÖÏàÍ¬¡£µ±È»£¬´ËÌõ¼şÖ»ÄÜÓëĞ´ËøÒ»ÆğÊ¹ÓÃ¡£
+ * <p>å†™é”æä¾›äº†ä¸€ä¸ªæ¡ä»¶å®ç°ï¼Œå®ƒåœ¨å†™é”æ–¹é¢çš„è¡Œä¸ºä¸ReentrantLock.newcondition()
+ * ä¸ºReentrantLockæä¾›çš„æ¡ä»¶å®ç°ç›¸åŒã€‚å½“ç„¶ï¼Œæ­¤æ¡ä»¶åªèƒ½ä¸å†™é”ä¸€èµ·ä½¿ç”¨ã€‚
  *
- * <p>¶ÁËø²»Ö§³ÖÌõ¼ş£¬readLock(). newcondition()Å×³öUnsupportedOperationException¡£
+ * <p>è¯»é”ä¸æ”¯æŒæ¡ä»¶ï¼ŒreadLock(). newcondition()æŠ›å‡ºUnsupportedOperationExceptionã€‚
  *
  * <li><b>Instrumentation</b>
- * <p>¸ÃÀàÖ§³ÖÓÃÓÚÈ·¶¨ËøÊÇ·ñ±»³ÖÓĞ»ò¾ºÕùµÄ·½·¨¡£ÕâĞ©·½·¨ÊÇÎª¼àÊÓÏµÍ³×´Ì¬¶øÉè¼ÆµÄ£¬²»ÊÇÎªÍ¬²½¿ØÖÆ¶øÉè¼ÆµÄ¡£
- * Õâ¸öÀàµÄĞòÁĞ»¯ÓëÄÚÖÃËøµÄĞĞÎª·½Ê½ÏàÍ¬:·´ĞòÁĞ»¯µÄËø´¦ÓÚ½âËø×´Ì¬£¬¶øÓëËüÔÚĞòÁĞ»¯Ê±µÄ×´Ì¬ÎŞ¹Ø¡£
- * Ê¾ÀıÓÃ·¨¡£ÏÂÃæµÄ´úÂëÑİÊ¾ÁËÈçºÎÔÚ¸üĞÂ»º´æºóÖ´ĞĞËø½µ¼¶(Òì³£´¦ÀíÔÚÒÔ·ÇÇ¶Ì×·½Ê½´¦Àí¶à¸öËøÊ±ÌØ±ğ¼¬ÊÖ):
+ * <p>è¯¥ç±»æ”¯æŒç”¨äºç¡®å®šé”æ˜¯å¦è¢«æŒæœ‰æˆ–ç«äº‰çš„æ–¹æ³•ã€‚è¿™äº›æ–¹æ³•æ˜¯ä¸ºç›‘è§†ç³»ç»ŸçŠ¶æ€è€Œè®¾è®¡çš„ï¼Œä¸æ˜¯ä¸ºåŒæ­¥æ§åˆ¶è€Œè®¾è®¡çš„ã€‚
+ * è¿™ä¸ªç±»çš„åºåˆ—åŒ–ä¸å†…ç½®é”çš„è¡Œä¸ºæ–¹å¼ç›¸åŒ:ååºåˆ—åŒ–çš„é”å¤„äºè§£é”çŠ¶æ€ï¼Œè€Œä¸å®ƒåœ¨åºåˆ—åŒ–æ—¶çš„çŠ¶æ€æ— å…³ã€‚
+ * ç¤ºä¾‹ç”¨æ³•ã€‚ä¸‹é¢çš„ä»£ç æ¼”ç¤ºäº†å¦‚ä½•åœ¨æ›´æ–°ç¼“å­˜åæ‰§è¡Œé”é™çº§(å¼‚å¸¸å¤„ç†åœ¨ä»¥éåµŒå¥—æ–¹å¼å¤„ç†å¤šä¸ªé”æ—¶ç‰¹åˆ«æ£˜æ‰‹):
  * </ul>
  *
  * <pre> {@code
@@ -129,9 +129,9 @@ import java.util.Collection;
  *   }
  * }}</pre>
  *
- * ReentrantReadWriteLocks¿ÉÓÃÓÚÄ³Ğ©¼¯ºÏµÄÄ³Ğ©ÓÃÍ¾ÖĞ¸Ä½ø²¢·¢ĞÔ¡£
- * Í¨³££¬Ö»ÓĞÔÚÔ¤ÆÚ¼¯ºÏºÜ´ó¡¢¶ÁÏß³Ì±ÈĞ´Ïß³Ì¸ü¶àµØ·ÃÎÊ¼¯ºÏ¡¢²¢ÇÒ²Ù×÷µÄ¿ªÏú³¬¹ıÍ¬²½¿ªÏúÊ±£¬²ÅÖµµÃÕâÑù×ö¡£
- * ÀıÈç£¬ÕâÀïÓĞÒ»¸öÊ¹ÓÃTreeMapµÄÀà£¬Õâ¸öTreeMapÓ¦¸ÃºÜ´ó£¬²¢ÇÒ¿ÉÒÔ²¢·¢·ÃÎÊ¡£
+ * ReentrantReadWriteLockså¯ç”¨äºæŸäº›é›†åˆçš„æŸäº›ç”¨é€”ä¸­æ”¹è¿›å¹¶å‘æ€§ã€‚
+ * é€šå¸¸ï¼Œåªæœ‰åœ¨é¢„æœŸé›†åˆå¾ˆå¤§ã€è¯»çº¿ç¨‹æ¯”å†™çº¿ç¨‹æ›´å¤šåœ°è®¿é—®é›†åˆã€å¹¶ä¸”æ“ä½œçš„å¼€é”€è¶…è¿‡åŒæ­¥å¼€é”€æ—¶ï¼Œæ‰å€¼å¾—è¿™æ ·åšã€‚
+ * ä¾‹å¦‚ï¼Œè¿™é‡Œæœ‰ä¸€ä¸ªä½¿ç”¨TreeMapçš„ç±»ï¼Œè¿™ä¸ªTreeMapåº”è¯¥å¾ˆå¤§ï¼Œå¹¶ä¸”å¯ä»¥å¹¶å‘è®¿é—®ã€‚
  *
  *  <pre> {@code
  * class RWDictionary {
@@ -164,7 +164,7 @@ import java.util.Collection;
  *
  * <h3>Implementation Notes</h3>
  *
- * <p>¸ÃËøÖ§³Ö×î¶à65535¸öµİ¹éĞ´ËøºÍ65535¸ö¶ÁËø¡£ÊÔÍ¼³¬¹ıÕâĞ©ÏŞÖÆ»áµ¼ÖÂËø¶¨·½·¨Å×³ö´íÎó¡£
+ * <p>è¯¥é”æ”¯æŒæœ€å¤š65535ä¸ªé€’å½’å†™é”å’Œ65535ä¸ªè¯»é”ã€‚è¯•å›¾è¶…è¿‡è¿™äº›é™åˆ¶ä¼šå¯¼è‡´é”å®šæ–¹æ³•æŠ›å‡ºé”™è¯¯ã€‚
  *
  * @since 1.5
  * @author Doug Lea
@@ -172,39 +172,39 @@ import java.util.Collection;
 public class ReentrantReadWriteLock
         implements ReadWriteLock, java.io.Serializable {
     private static final long serialVersionUID = -6992448646407690164L;
-    /** Ìá¹©¶ÁËøµÄÄÚ²¿Àà */
+    /** æä¾›è¯»é”çš„å†…éƒ¨ç±» */
     private final ReentrantReadWriteLock.ReadLock readerLock;
-    /** Ìá¹©Ğ´ËøµÄÄÚ²¿Àà */
+    /** æä¾›å†™é”çš„å†…éƒ¨ç±» */
     private final ReentrantReadWriteLock.WriteLock writerLock;
-    /** Ö´ĞĞËùÓĞµÄÍ¬²½²Ù×÷ */
+    /** æ‰§è¡Œæ‰€æœ‰çš„åŒæ­¥æ“ä½œ */
     final Sync sync;
 
     /**
-     * ´´½¨Ò»¸öĞÂµÄ {@code ReentrantReadWriteLock} with
-     * Ä¬ÈÏ (·Ç¹«Æ½) Ë³ĞòÊôĞÔ.
+     * åˆ›å»ºä¸€ä¸ªæ–°çš„ {@code ReentrantReadWriteLock} with
+     * é»˜è®¤ (éå…¬å¹³) é¡ºåºå±æ€§.
      */
     public ReentrantReadWriteLock() {
         this(false);
     }
 
     /**
-     * ´´½¨Ò»¸öĞÂµÄ {@code ReentrantReadWriteLock} with
-     * the¸ø¶¨µÄ¹«Æ½²ßÂÔ.
+     * åˆ›å»ºä¸€ä¸ªæ–°çš„ {@code ReentrantReadWriteLock} with
+     * theç»™å®šçš„å…¬å¹³ç­–ç•¥.
      *
-     * @param fair {@code true} Èç¹ûËøÊ¹ÓÃ¹«Æ½µÄË³Ğò²ßÂÔ
+     * @param fair {@code true} å¦‚æœé”ä½¿ç”¨å…¬å¹³çš„é¡ºåºç­–ç•¥
      */
     public ReentrantReadWriteLock(boolean fair) {
-        sync = fair ? new FairSync() : new NonfairSync(); // ¹«Æ½»ò·Ç¹«Æ½Í¬²½Ëø
-        readerLock = new ReadLock(this); // ¶ÁËø ¹²ÏíËø
-        writerLock = new WriteLock(this); // Ğ´Ëø ÅÅËüËø
+        sync = fair ? new FairSync() : new NonfairSync(); // å…¬å¹³æˆ–éå…¬å¹³åŒæ­¥é”
+        readerLock = new ReadLock(this); // è¯»é” å…±äº«é”
+        writerLock = new WriteLock(this); // å†™é” æ’å®ƒé”
     }
 
     public ReentrantReadWriteLock.WriteLock writeLock() { return writerLock; }
     public ReentrantReadWriteLock.ReadLock  readLock()  { return readerLock; }
 
     /**
-     * ¿ÉÖØÈë¶ÁĞ´ËøµÄÍ¬²½ÊµÏÖ
-     * ×ÓÀà¹«Æ½»ò·Ç¹«Æ½µÄ°æ±¾
+     * å¯é‡å…¥è¯»å†™é”çš„åŒæ­¥å®ç°
+     * å­ç±»å…¬å¹³æˆ–éå…¬å¹³çš„ç‰ˆæœ¬
      */
     abstract static class Sync extends AbstractQueuedSynchronizer {
         private static final long serialVersionUID = 6317671515068378041L;
@@ -216,226 +216,226 @@ public class ReentrantReadWriteLock
          * and the upper the shared (reader) hold count.
          */
 
-        static final int SHARED_SHIFT   = 16; // ¸ß16Î»Îª¶ÁËø£¬µÍ16Î»ÎªĞ´Ëø
-        static final int SHARED_UNIT    = (1 << SHARED_SHIFT); // ¶ÁĞ´Ëøµ¥Î» 65536
-        static final int MAX_COUNT      = (1 << SHARED_SHIFT) - 1; // ¶ÁĞ´Ëø×î´óÊıÁ¿
-        static final int EXCLUSIVE_MASK = (1 << SHARED_SHIFT) - 1; // »ñÈ¡Ğ´ËøÊıµÄÑÚÂë
+        static final int SHARED_SHIFT   = 16; // é«˜16ä½ä¸ºè¯»é”ï¼Œä½16ä½ä¸ºå†™é”
+        static final int SHARED_UNIT    = (1 << SHARED_SHIFT); // è¯»å†™é”å•ä½ 65536
+        static final int MAX_COUNT      = (1 << SHARED_SHIFT) - 1; // è¯»å†™é”æœ€å¤§æ•°é‡
+        static final int EXCLUSIVE_MASK = (1 << SHARED_SHIFT) - 1; // è·å–å†™é”æ•°çš„æ©ç 
 
-        /** ÓÃÓÚ¼ÆËã³ÖÓĞ¶ÁËøµÄÏß³ÌÊı  */
+        /** ç”¨äºè®¡ç®—æŒæœ‰è¯»é”çš„çº¿ç¨‹æ•°  */
         static int sharedCount(int c)    { return c >>> SHARED_SHIFT; }
-        /** ÓÃÓÚ¼ÆËã³ÖÓĞĞ´ËøÏß³ÌÊı  */
+        /** ç”¨äºè®¡ç®—æŒæœ‰å†™é”çº¿ç¨‹æ•°  */
         static int exclusiveCount(int c) { return c & EXCLUSIVE_MASK; }
 
         /**
-         * Ã¿¸öÏß³Ì³ÖÓĞ¶ÁÈ¡ËøµÄ¼ÆÊı
-         * ±£´æÔÚ ThreadLocal; »º´æÔÚ cachedHoldCounter
+         * æ¯ä¸ªçº¿ç¨‹æŒæœ‰è¯»å–é”çš„è®¡æ•°
+         * ä¿å­˜åœ¨ ThreadLocal; ç¼“å­˜åœ¨ cachedHoldCounter
          */
         static final class HoldCounter {
             int count = 0;
-            // Ê¹ÓÃid, ¶ø·ÇÒıÓÃ, È¥±ÜÃâÀ¬»ø»ØÊÕÎÊÌâ
+            // ä½¿ç”¨id, è€Œéå¼•ç”¨, å»é¿å…åƒåœ¾å›æ”¶é—®é¢˜
             final long tid = getThreadId(Thread.currentThread());
         }
 
         /**
-         * ThreadLocal ×ÓÀà. Easiest to explicitly define for sake
+         * ThreadLocal å­ç±». Easiest to explicitly define for sake
          * of deserialization mechanics.
          */
         static final class ThreadLocalHoldCounter
             extends ThreadLocal<HoldCounter> {
-            // ÖØĞ´threadLocalµÄinitiaValue·½·¨
+            // é‡å†™threadLocalçš„initiaValueæ–¹æ³•
             public HoldCounter initialValue() {
                 return new HoldCounter();
             }
         }
 
         /**
-         * µ±Ç°Ïß³Ì³ÖÓĞµÄ¿ÉÖØÈë¶ÁËøµÄÊıÁ¿¡£½öÔÚ¹¹Ôìº¯ÊıºÍreadObjectÖĞ³õÊ¼»¯¡£
-         * µ±Ïß³ÌµÄ¶Á±£³Ö¼ÆÊıÏÂ½µµ½0Ê±É¾³ı¡£
+         * å½“å‰çº¿ç¨‹æŒæœ‰çš„å¯é‡å…¥è¯»é”çš„æ•°é‡ã€‚ä»…åœ¨æ„é€ å‡½æ•°å’ŒreadObjectä¸­åˆå§‹åŒ–ã€‚
+         * å½“çº¿ç¨‹çš„è¯»ä¿æŒè®¡æ•°ä¸‹é™åˆ°0æ—¶åˆ é™¤ã€‚
          */
         private transient ThreadLocalHoldCounter readHolds;
 
         /**
-         * ³É¹¦»ñÈ¡readLockµÄ×îºóÒ»¸öÏß³ÌµÄ³ÖÓĞ¼ÆÊı¡£ÕâÔÚÍ¨³£Çé¿öÏÂ½ÚÊ¡ÁËThreadLocal²éÕÒ£¬
-         * ÒòÎªÏÂÒ»¸öÒª·¢²¼µÄÏß³ÌÊÇ×îºóÒ»¸öÒª»ñÈ¡µÄ¡£ÕâÊÇ·ÇÒ×Ê§ĞÔµÄ£¬ÒòÎªËüÖ»ÊÇ×÷ÎªÒ»ÖÖÆô·¢Ê¹ÓÃ£¬
-         * ¶øÇÒ¶ÔÓÚÏß³Ì»º´æÀ´Ëµ·Ç³£ºÃ¡£
+         * æˆåŠŸè·å–readLockçš„æœ€åä¸€ä¸ªçº¿ç¨‹çš„æŒæœ‰è®¡æ•°ã€‚è¿™åœ¨é€šå¸¸æƒ…å†µä¸‹èŠ‚çœäº†ThreadLocalæŸ¥æ‰¾ï¼Œ
+         * å› ä¸ºä¸‹ä¸€ä¸ªè¦å‘å¸ƒçš„çº¿ç¨‹æ˜¯æœ€åä¸€ä¸ªè¦è·å–çš„ã€‚è¿™æ˜¯éæ˜“å¤±æ€§çš„ï¼Œå› ä¸ºå®ƒåªæ˜¯ä½œä¸ºä¸€ç§å¯å‘ä½¿ç”¨ï¼Œ
+         * è€Œä¸”å¯¹äºçº¿ç¨‹ç¼“å­˜æ¥è¯´éå¸¸å¥½ã€‚
          *
-         * <p>¿ÉÒÔ±È»º´æ¶Á±£³Ö¼ÆÊıµÄÏß³Ì»îµÃ¸ü¾Ã£¬µ«ÊÇÍ¨¹ı²»±£Áô¶ÔÏß³ÌµÄÒıÓÃÀ´±ÜÃâÀ¬»ø±£Áô¡£
+         * <p>å¯ä»¥æ¯”ç¼“å­˜è¯»ä¿æŒè®¡æ•°çš„çº¿ç¨‹æ´»å¾—æ›´ä¹…ï¼Œä½†æ˜¯é€šè¿‡ä¸ä¿ç•™å¯¹çº¿ç¨‹çš„å¼•ç”¨æ¥é¿å…åƒåœ¾ä¿ç•™ã€‚
          *
-         * <p>Í¨¹ıÁ¼ĞÔµÄÊı¾İ¾ºÕù·ÃÎÊ;ÒÀÀµÓÚÄÚ´æÄ£ĞÍµÄ×îÖÕ×Ö¶ÎºÍ·Ç¿Õ±£Ö¤¡£
+         * <p>é€šè¿‡è‰¯æ€§çš„æ•°æ®ç«äº‰è®¿é—®;ä¾èµ–äºå†…å­˜æ¨¡å‹çš„æœ€ç»ˆå­—æ®µå’Œéç©ºä¿è¯ã€‚
          */
         private transient HoldCounter cachedHoldCounter;
 
         /**
-         * firstReaderÊÇ»ñµÃ¶ÁËøµÄµÚÒ»¸öÏß³Ì¡£firstReaderHoldCountÊÇfirstReaderµÄ³ÖÓĞ¼ÆÊı¡£
+         * firstReaderæ˜¯è·å¾—è¯»é”çš„ç¬¬ä¸€ä¸ªçº¿ç¨‹ã€‚firstReaderHoldCountæ˜¯firstReaderçš„æŒæœ‰è®¡æ•°ã€‚
          *
-         * <p>¸ü×¼È·µØËµ£¬firstReaderÊÇ×îºóÒ»´Î½«¹²Ïí¼ÆÊı´Ó0¸ü¸ÄÎª1µÄÎ©Ò»Ïß³Ì£¬²¢ÇÒ´ÓÄÇÊ±Æğ¾ÍÃ»ÓĞÊÍ·Å¶ÁËø;
-         * Èç¹ûÃ»ÓĞÕâÑùµÄÏß³Ì£¬ÔòÎª¿Õ¡£
+         * <p>æ›´å‡†ç¡®åœ°è¯´ï¼ŒfirstReaderæ˜¯æœ€åä¸€æ¬¡å°†å…±äº«è®¡æ•°ä»0æ›´æ”¹ä¸º1çš„æƒŸä¸€çº¿ç¨‹ï¼Œå¹¶ä¸”ä»é‚£æ—¶èµ·å°±æ²¡æœ‰é‡Šæ”¾è¯»é”;
+         * å¦‚æœæ²¡æœ‰è¿™æ ·çš„çº¿ç¨‹ï¼Œåˆ™ä¸ºç©ºã€‚
          *
-         * <p>³ı·ÇÏß³ÌÔÚ²»ÊÍ·Å¶ÁËøµÄÇé¿öÏÂÖÕÖ¹£¬·ñÔò²»»áµ¼ÖÂÀ¬»ø±£Áô£¬ÒòÎªtryReleaseShared½«ÆäÉèÖÃÎªnull¡£
+         * <p>é™¤éçº¿ç¨‹åœ¨ä¸é‡Šæ”¾è¯»é”çš„æƒ…å†µä¸‹ç»ˆæ­¢ï¼Œå¦åˆ™ä¸ä¼šå¯¼è‡´åƒåœ¾ä¿ç•™ï¼Œå› ä¸ºtryReleaseSharedå°†å…¶è®¾ç½®ä¸ºnullã€‚
          *
-         * <p>Í¨¹ıÁ¼ĞÔµÄÊı¾İ¾ºÕù·ÃÎÊ;ÒÀÀµÓÚÄÚ´æÄ£ĞÍµÄout- thin-air±£Ö¤ÒıÓÃ¡£
+         * <p>é€šè¿‡è‰¯æ€§çš„æ•°æ®ç«äº‰è®¿é—®;ä¾èµ–äºå†…å­˜æ¨¡å‹çš„out- thin-airä¿è¯å¼•ç”¨ã€‚
          *
-         * <p>ÕâÊ¹µÃ¶Ô·Ç¾ºÕù¶Á=ËøµÄ¶Á³ÖÓĞµÄ¸ú×Ù·Ç³£±ãÒË¡£
+         * <p>è¿™ä½¿å¾—å¯¹éç«äº‰è¯»=é”çš„è¯»æŒæœ‰çš„è·Ÿè¸ªéå¸¸ä¾¿å®œã€‚
          */
         private transient Thread firstReader = null;
         private transient int firstReaderHoldCount;
 
         Sync() {
             readHolds = new ThreadLocalHoldCounter();
-            setState(getState()); // È·±£readholdµÄ¿É¼ûĞÔ
+            setState(getState()); // ç¡®ä¿readholdçš„å¯è§æ€§
         }
 
         /*
-         * »ñÈ¡ºÍ·¢²¼¶Ô¹«Æ½ËøºÍ·Ç¹«Æ½ËøÊ¹ÓÃÏàÍ¬µÄ´úÂë£¬µ«ÔÚ¶ÓÁĞ·Ç¿ÕÊ±ÊÇ·ñ/ÈçºÎÔÊĞí×èÈû·½ÃæÓĞËù²»Í¬¡£
+         * è·å–å’Œå‘å¸ƒå¯¹å…¬å¹³é”å’Œéå…¬å¹³é”ä½¿ç”¨ç›¸åŒçš„ä»£ç ï¼Œä½†åœ¨é˜Ÿåˆ—éç©ºæ—¶æ˜¯å¦/å¦‚ä½•å…è®¸é˜»å¡æ–¹é¢æœ‰æ‰€ä¸åŒã€‚
          */
 
         /**
-         * Èç¹ûµ±Ç°Ïß³ÌÔÚ³¢ÊÔ»ñÈ¡¶ÁËøÊ±(»òÕßÓĞ×Ê¸ñÕâÑù×ö)Ó¦¸Ã×èÈû£¬Ôò·µ»Øtrue£¬ÒòÎª²ßÂÔÊÇÎªÁËÈ¡´úÆäËûÕıÔÚµÈ´ıµÄÏß³Ì¡£
+         * å¦‚æœå½“å‰çº¿ç¨‹åœ¨å°è¯•è·å–è¯»é”æ—¶(æˆ–è€…æœ‰èµ„æ ¼è¿™æ ·åš)åº”è¯¥é˜»å¡ï¼Œåˆ™è¿”å›trueï¼Œå› ä¸ºç­–ç•¥æ˜¯ä¸ºäº†å–ä»£å…¶ä»–æ­£åœ¨ç­‰å¾…çš„çº¿ç¨‹ã€‚
          */
         abstract boolean readerShouldBlock();
 
         /**
-         * Èç¹ûµ±Ç°Ïß³ÌÔÚ³¢ÊÔ»ñÈ¡Ğ´ËøÊ±(»òÕßÓĞ×Ê¸ñÕâÑù×ö)Ó¦¸Ã×èÈû£¬Ôò·µ»Øtrue£¬ÒòÎª²ßÂÔÊÇÎªÁËÈ¡´úÆäËûÕıÔÚµÈ´ıµÄÏß³Ì¡£
+         * å¦‚æœå½“å‰çº¿ç¨‹åœ¨å°è¯•è·å–å†™é”æ—¶(æˆ–è€…æœ‰èµ„æ ¼è¿™æ ·åš)åº”è¯¥é˜»å¡ï¼Œåˆ™è¿”å›trueï¼Œå› ä¸ºç­–ç•¥æ˜¯ä¸ºäº†å–ä»£å…¶ä»–æ­£åœ¨ç­‰å¾…çš„çº¿ç¨‹ã€‚
          */
         abstract boolean writerShouldBlock();
 
         /*
-         * Çë×¢Òâ£¬tryReleaseºÍtryAcquire¿ÉÒÔ¸ù¾İÌõ¼şµ÷ÓÃ¡£
-         * Òò´Ë£¬ËüÃÇµÄ²ÎÊı¿ÉÄÜÍ¬Ê±°üº¬¶ÁºÍĞ´³ÖÓĞ£¬ËùÓĞÕâĞ©¶¼ÔÚÌõ¼şµÈ´ıÆÚ¼äÊÍ·Å£¬²¢ÔÚtryAcquireÖĞÖØĞÂ½¨Á¢¡£
+         * è¯·æ³¨æ„ï¼ŒtryReleaseå’ŒtryAcquireå¯ä»¥æ ¹æ®æ¡ä»¶è°ƒç”¨ã€‚
+         * å› æ­¤ï¼Œå®ƒä»¬çš„å‚æ•°å¯èƒ½åŒæ—¶åŒ…å«è¯»å’Œå†™æŒæœ‰ï¼Œæ‰€æœ‰è¿™äº›éƒ½åœ¨æ¡ä»¶ç­‰å¾…æœŸé—´é‡Šæ”¾ï¼Œå¹¶åœ¨tryAcquireä¸­é‡æ–°å»ºç«‹ã€‚
          */
 
         protected final boolean tryRelease(int releases) {
-            if (!isHeldExclusively()) // ²»³ÖÓĞĞ´ËøÔò±¨´í
+            if (!isHeldExclusively()) // ä¸æŒæœ‰å†™é”åˆ™æŠ¥é”™
                 throw new IllegalMonitorStateException();
-            int nextc = getState() - releases; // ÊÍ·Åºó×´Ì¬Öµ
-            boolean free = exclusiveCount(nextc) == 0; // Ğ´ÈëËøÊıÁ¿Îª0ÔòÊÍ·Å
+            int nextc = getState() - releases; // é‡Šæ”¾åçŠ¶æ€å€¼
+            boolean free = exclusiveCount(nextc) == 0; // å†™å…¥é”æ•°é‡ä¸º0åˆ™é‡Šæ”¾
             if (free)
-                setExclusiveOwnerThread(null); // ÉèÖÃµ±Ç°³ÖÓĞËø¶ÔÏóÎªnull
-            setState(nextc); // ÉèÖÃ×´Ì¬
-            return free; // ·µ»ØËøÊÇ·ñ±»ÊÍ·Å
+                setExclusiveOwnerThread(null); // è®¾ç½®å½“å‰æŒæœ‰é”å¯¹è±¡ä¸ºnull
+            setState(nextc); // è®¾ç½®çŠ¶æ€
+            return free; // è¿”å›é”æ˜¯å¦è¢«é‡Šæ”¾
         }
 
         protected final boolean tryAcquire(int acquires) {
             /*
              * Walkthrough:
-             * 1. Èç¹û¶Á¼ÆÊı·ÇÁã»òĞ´¼ÆÊı·ÇÁãºÍËùÓĞÕßÊÇ²»Í¬µÄÏß³Ì£¬Ê§°Ü¡£
-             * 2. Èç¹û¼ÆÊı±¥ºÍ£¬ÔòÊ§°Ü¡£(ÕâÖ»»áÔÚcountÒÑ¾­·ÇÁãµÄÇé¿öÏÂ·¢Éú¡£)
-             * 3. ·ñÔò£¬Èç¹ûÊÇ¿ÉÖØÈë»ñÈ¡»ò¶ÓÁĞ²ßÂÔÔÊĞí£¬Ôò´ËÏß³ÌÓĞ×Ê¸ñ»ñµÃËø¡£Èç¹ûÊÇ£¬Ôò¸üĞÂ×´Ì¬²¢ÉèÖÃËùÓĞÕß¡£
+             * 1. å¦‚æœè¯»è®¡æ•°éé›¶æˆ–å†™è®¡æ•°éé›¶å’Œæ‰€æœ‰è€…æ˜¯ä¸åŒçš„çº¿ç¨‹ï¼Œå¤±è´¥ã€‚
+             * 2. å¦‚æœè®¡æ•°é¥±å’Œï¼Œåˆ™å¤±è´¥ã€‚(è¿™åªä¼šåœ¨countå·²ç»éé›¶çš„æƒ…å†µä¸‹å‘ç”Ÿã€‚)
+             * 3. å¦åˆ™ï¼Œå¦‚æœæ˜¯å¯é‡å…¥è·å–æˆ–é˜Ÿåˆ—ç­–ç•¥å…è®¸ï¼Œåˆ™æ­¤çº¿ç¨‹æœ‰èµ„æ ¼è·å¾—é”ã€‚å¦‚æœæ˜¯ï¼Œåˆ™æ›´æ–°çŠ¶æ€å¹¶è®¾ç½®æ‰€æœ‰è€…ã€‚
              */
-            Thread current = Thread.currentThread(); // µ±Ç°Ïß³Ì
-            int c = getState(); // Ëø×´Ì¬
-            int w = exclusiveCount(c); // Ğ´ÈëËøÊıÁ¿
+            Thread current = Thread.currentThread(); // å½“å‰çº¿ç¨‹
+            int c = getState(); // é”çŠ¶æ€
+            int w = exclusiveCount(c); // å†™å…¥é”æ•°é‡
             if (c != 0) {
                 // (Note: if c != 0 and w == 0 then shared count != 0)
                 if (w == 0 || current != getExclusiveOwnerThread())
-                    return false; // Èç¹ûĞ´ÈëËøÎª0 »òÕß Ğ´ÈëËø²»Îª0µ«ÊÇµ±Ç°Ïß³Ì²»ÊÇĞ´ÈëËøÏß³Ì£¬Ôò»ñÈ¡Ê§°Ü
-                if (w + exclusiveCount(acquires) > MAX_COUNT) // Èç¹ûĞ´ÈëËøÊıÁ¿³¬¹ı×î´óÖµÔòÅ×³öÒì³£
+                    return false; // å¦‚æœå†™å…¥é”ä¸º0 æˆ–è€… å†™å…¥é”ä¸ä¸º0ä½†æ˜¯å½“å‰çº¿ç¨‹ä¸æ˜¯å†™å…¥é”çº¿ç¨‹ï¼Œåˆ™è·å–å¤±è´¥
+                if (w + exclusiveCount(acquires) > MAX_COUNT) // å¦‚æœå†™å…¥é”æ•°é‡è¶…è¿‡æœ€å¤§å€¼åˆ™æŠ›å‡ºå¼‚å¸¸
                     throw new Error("Maximum lock count exceeded");
-                // ·ñÔò¿ÉÖØÈë»ñÈ¡
+                // å¦åˆ™å¯é‡å…¥è·å–
                 setState(c + acquires);
-                return true; // »ñµÃËø·µ»Ø
+                return true; // è·å¾—é”è¿”å›
             }
-            if (writerShouldBlock() || // Ğ´ÈëÎ´×èÈû×¡ÔòÉèÖÃĞ´ÈëËø×´Ì¬
+            if (writerShouldBlock() || // å†™å…¥æœªé˜»å¡ä½åˆ™è®¾ç½®å†™å…¥é”çŠ¶æ€
                 !compareAndSetState(c, c + acquires))
-                return false; // »ñµÃËøÊ§°Ü
-            setExclusiveOwnerThread(current); // ÉèÖÃµ±Ç°Ïß³Ì³ÖÓĞËø
-            return true; // »ñµÃËø³É¹¦
+                return false; // è·å¾—é”å¤±è´¥
+            setExclusiveOwnerThread(current); // è®¾ç½®å½“å‰çº¿ç¨‹æŒæœ‰é”
+            return true; // è·å¾—é”æˆåŠŸ
         }
 
-        protected final boolean tryReleaseShared(int unused) { // ÊÔÍ¼ÊÍ·Å¹²ÏíËø
-            Thread current = Thread.currentThread(); // ÄÃµ½µ±Ç°Ïß³Ì
-            if (firstReader == current) { // Èç¹ûµ±Ç°Ïß³ÌÊÇµÚÒ»´Î»ñÈ¡¶ÁËøµÄÏß³Ì
+        protected final boolean tryReleaseShared(int unused) { // è¯•å›¾é‡Šæ”¾å…±äº«é”
+            Thread current = Thread.currentThread(); // æ‹¿åˆ°å½“å‰çº¿ç¨‹
+            if (firstReader == current) { // å¦‚æœå½“å‰çº¿ç¨‹æ˜¯ç¬¬ä¸€æ¬¡è·å–è¯»é”çš„çº¿ç¨‹
                 // assert firstReaderHoldCount > 0;
-                if (firstReaderHoldCount == 1)  // Èç¹ûµÚÒ»´Î»ñÈ¡¶ÁËøµÄÊıÁ¿Îª1
-                    firstReader = null; // ÊÍ·ÅµÚÒ»¸ö¶ÁËøµÄÊıÁ¿
+                if (firstReaderHoldCount == 1)  // å¦‚æœç¬¬ä¸€æ¬¡è·å–è¯»é”çš„æ•°é‡ä¸º1
+                    firstReader = null; // é‡Šæ”¾ç¬¬ä¸€ä¸ªè¯»é”çš„æ•°é‡
                 else
-                    firstReaderHoldCount--; // ·ñÔòÊıÁ¿¼õÒ»
-            } else { // ·ÇµÚÒ»¸ö»ñÈ¡¶ÁËøµÄÏß³Ì
-                // ×î½üÒ»´Î»ñÈ¡¶ÁÈ¡ËøµÄÏß³ÌºÍ¼¼Êõ
+                    firstReaderHoldCount--; // å¦åˆ™æ•°é‡å‡ä¸€
+            } else { // éç¬¬ä¸€ä¸ªè·å–è¯»é”çš„çº¿ç¨‹
+                // æœ€è¿‘ä¸€æ¬¡è·å–è¯»å–é”çš„çº¿ç¨‹å’ŒæŠ€æœ¯
                 HoldCounter rh = cachedHoldCounter;
-                // Èç¹ûHoldCounterÎªnull£¬»ò±£´æµÄ·Çµ±Ç°Ïß³ÌµÄĞÅÏ¢
+                // å¦‚æœHoldCounterä¸ºnullï¼Œæˆ–ä¿å­˜çš„éå½“å‰çº¿ç¨‹çš„ä¿¡æ¯
                 if (rh == null || rh.tid != getThreadId(current))
-                    // ´ÓÉÏÏÂÎÄÖĞ»ñÈ¡µ±Ç°Ïß³ÌµÄĞÅÏ¢
+                    // ä»ä¸Šä¸‹æ–‡ä¸­è·å–å½“å‰çº¿ç¨‹çš„ä¿¡æ¯
                     rh = readHolds.get();
-                int count = rh.count; // ÄÃµ½¿ÉÖØÈëÊıÁ¿
-                if (count <= 1) { // Èç¹û´ÎÊıĞ¡ÓÚ1£¬Ôò´ÓÉÏÏÂÎÄÖĞÒÆ³ı
+                int count = rh.count; // æ‹¿åˆ°å¯é‡å…¥æ•°é‡
+                if (count <= 1) { // å¦‚æœæ¬¡æ•°å°äº1ï¼Œåˆ™ä»ä¸Šä¸‹æ–‡ä¸­ç§»é™¤
                     readHolds.remove();
-                    if (count <= 0) // Èç¹û´ÎÊıĞ¡ÓÚ0£¬ÔòÅ×Òì³£
+                    if (count <= 0) // å¦‚æœæ¬¡æ•°å°äº0ï¼Œåˆ™æŠ›å¼‚å¸¸
                         throw unmatchedUnlockException();
                 }
-                --rh.count; // ·ñÔòËøÊıÁ¿-1
+                --rh.count; // å¦åˆ™é”æ•°é‡-1
             }
-            for (;;) { // ×ÔĞı
-                int c = getState(); // Ëø×´Ì¬
-                int nextc = c - SHARED_UNIT; // ¹²ÏíËø-1
-                if (compareAndSetState(c, nextc)) // ÉèÖÃstate
-                    // ÊÍ·Å¶ÁËø²»»áÓ°ÏìÆäËû¶ÁËø
-                    // µ«ÊÇ£¬Èç¹û¶ÁĞ´ËøÏÖÔÚ¶¼ÊÇ¿ÕÏĞµÄ£¬ÄÇÃ´Ëü¿ÉÄÜÔÊĞíµÈ´ıµÄĞ´ÈëÆ÷¼ÌĞø¹¤×÷¡£
-                    return nextc == 0; // ·µ»ØÊÇ·ñ»¹´æÔÚ¶ÁËø
+            for (;;) { // è‡ªæ—‹
+                int c = getState(); // é”çŠ¶æ€
+                int nextc = c - SHARED_UNIT; // å…±äº«é”-1
+                if (compareAndSetState(c, nextc)) // è®¾ç½®state
+                    // é‡Šæ”¾è¯»é”ä¸ä¼šå½±å“å…¶ä»–è¯»é”
+                    // ä½†æ˜¯ï¼Œå¦‚æœè¯»å†™é”ç°åœ¨éƒ½æ˜¯ç©ºé—²çš„ï¼Œé‚£ä¹ˆå®ƒå¯èƒ½å…è®¸ç­‰å¾…çš„å†™å…¥å™¨ç»§ç»­å·¥ä½œã€‚
+                    return nextc == 0; // è¿”å›æ˜¯å¦è¿˜å­˜åœ¨è¯»é”
             }
         }
 
         private IllegalMonitorStateException unmatchedUnlockException() {
             return new IllegalMonitorStateException(
                 "attempt to unlock read lock, not locked by current thread");
-        } // ÊÔÍ¼È¥½â³ı¶ÁËø£¬µ«ÊÇ²¢Î´±»µ±Ç°Ïß³ÌËø×¡
+        } // è¯•å›¾å»è§£é™¤è¯»é”ï¼Œä½†æ˜¯å¹¶æœªè¢«å½“å‰çº¿ç¨‹é”ä½
 
         protected final int tryAcquireShared(int unused) {
             /*
              * Walkthrough:
-             * 1. Èç¹ûÁíÒ»¸öÏß³Ì³ÖÓĞĞ´Ëø£¬ÔòÊ§°Ü¡£
-             * 2. ·ñÔò£¬´ËÏß³Ì½«ÓĞ×Ê¸ñ»ñµÃËøwrt×´Ì¬£¬Òò´ËÇëÑ¯ÎÊËüÊÇ·ñÓ¦¸ÃÓÉÓÚ¶ÓÁĞ²ßÂÔ¶ø×èÈû¡£
-             * Èç¹û²»ÊÇ£¬³¢ÊÔÍ¨¹ıÍâ¿Ç×´Ì¬ºÍ¸üĞÂ¼ÆÊıÀ´ÊÚÓè¡£
-             * ×¢Òâ£¬stepÃ»ÓĞ¼ì²é¿ÉÖØÈëµÄ»ñÈ¡£¬Ëü±»ÍÆ³Ùµ½ÍêÕû°æ±¾£¬ÒÔ±ÜÃâÔÚ¸üµäĞÍµÄ²»¿ÉÖØÈëÇé¿öÏÂ¼ì²é³ÖÓĞ¼ÆÊı¡£
-             * 3. Èç¹ûµÚ2²½Ê§°Ü£¬ÒªÃ´ÊÇÒòÎªÏß³ÌÏÔÈ»²»·ûºÏÌõ¼ş£¬ÒªÃ´ÊÇCASÊ§°Ü»ò¼ÆÊı±¥ºÍ£¬
-             * ÔòÁ´½Óµ½¾ßÓĞÍêÕûÖØÊÔÑ­»·µÄ°æ±¾¡£
+             * 1. å¦‚æœå¦ä¸€ä¸ªçº¿ç¨‹æŒæœ‰å†™é”ï¼Œåˆ™å¤±è´¥ã€‚
+             * 2. å¦åˆ™ï¼Œæ­¤çº¿ç¨‹å°†æœ‰èµ„æ ¼è·å¾—é”wrtçŠ¶æ€ï¼Œå› æ­¤è¯·è¯¢é—®å®ƒæ˜¯å¦åº”è¯¥ç”±äºé˜Ÿåˆ—ç­–ç•¥è€Œé˜»å¡ã€‚
+             * å¦‚æœä¸æ˜¯ï¼Œå°è¯•é€šè¿‡å¤–å£³çŠ¶æ€å’Œæ›´æ–°è®¡æ•°æ¥æˆäºˆã€‚
+             * æ³¨æ„ï¼Œstepæ²¡æœ‰æ£€æŸ¥å¯é‡å…¥çš„è·å–ï¼Œå®ƒè¢«æ¨è¿Ÿåˆ°å®Œæ•´ç‰ˆæœ¬ï¼Œä»¥é¿å…åœ¨æ›´å…¸å‹çš„ä¸å¯é‡å…¥æƒ…å†µä¸‹æ£€æŸ¥æŒæœ‰è®¡æ•°ã€‚
+             * 3. å¦‚æœç¬¬2æ­¥å¤±è´¥ï¼Œè¦ä¹ˆæ˜¯å› ä¸ºçº¿ç¨‹æ˜¾ç„¶ä¸ç¬¦åˆæ¡ä»¶ï¼Œè¦ä¹ˆæ˜¯CASå¤±è´¥æˆ–è®¡æ•°é¥±å’Œï¼Œ
+             * åˆ™é“¾æ¥åˆ°å…·æœ‰å®Œæ•´é‡è¯•å¾ªç¯çš„ç‰ˆæœ¬ã€‚
              */
-            Thread current = Thread.currentThread(); // µ±Ç°Ïß³Ì
-            int c = getState(); // µ±Ç°×´Ì¬
-            if (exclusiveCount(c) != 0 && // Ğ´ËøÊı²»Îª0
-                getExclusiveOwnerThread() != current) // ³ÖÓĞËøÏß³Ì²»Îªµ±Ç°Ïß³Ì
-                return -1; // »ñÈ¡Ê§°Ü
-            int r = sharedCount(c);  // ¶ÁËøÊıÁ¿
-            if (!readerShouldBlock() && // ¶ÁËøÎ´×èÈû
-                r < MAX_COUNT && // ÊıÁ¿Ğ¡ÓÚ×î´óÖµ
-                compareAndSetState(c, c + SHARED_UNIT)) { // ËøÊıÁ¿+1
-                if (r == 0) { // ¶ÁËøÊıÁ¿Îª0
-                    firstReader = current; // ÉèÖÃµ±Ç°Ïß³ÌÎ´µÚÒ»¸ö»ñÈ¡¶ÁËøµÄ
-                    firstReaderHoldCount = 1; // ÊıÁ¿Îª1
-                } else if (firstReader == current) { // ÖØÈë
+            Thread current = Thread.currentThread(); // å½“å‰çº¿ç¨‹
+            int c = getState(); // å½“å‰çŠ¶æ€
+            if (exclusiveCount(c) != 0 && // å†™é”æ•°ä¸ä¸º0
+                getExclusiveOwnerThread() != current) // æŒæœ‰é”çº¿ç¨‹ä¸ä¸ºå½“å‰çº¿ç¨‹
+                return -1; // è·å–å¤±è´¥
+            int r = sharedCount(c);  // è¯»é”æ•°é‡
+            if (!readerShouldBlock() && // è¯»é”æœªé˜»å¡
+                r < MAX_COUNT && // æ•°é‡å°äºæœ€å¤§å€¼
+                compareAndSetState(c, c + SHARED_UNIT)) { // é”æ•°é‡+1
+                if (r == 0) { // è¯»é”æ•°é‡ä¸º0
+                    firstReader = current; // è®¾ç½®å½“å‰çº¿ç¨‹æœªç¬¬ä¸€ä¸ªè·å–è¯»é”çš„
+                    firstReaderHoldCount = 1; // æ•°é‡ä¸º1
+                } else if (firstReader == current) { // é‡å…¥
                     firstReaderHoldCount++; // +1
                 } else {
-                    HoldCounter rh = cachedHoldCounter; // ÄÃµ½ThreadocalMap
-                    if (rh == null || rh.tid != getThreadId(current)) // Îªnull£¬»ò·Çµ±Ç°Ïß³Ì
-                        cachedHoldCounter = rh = readHolds.get(); // ÉÏÏÂÎÄÖĞ»ñÈ¡
-                    else if (rh.count == 0) // ÈôÊıÁ¿Îª0
-                        readHolds.set(rh); // ÉèÖÃ
+                    HoldCounter rh = cachedHoldCounter; // æ‹¿åˆ°ThreadocalMap
+                    if (rh == null || rh.tid != getThreadId(current)) // ä¸ºnullï¼Œæˆ–éå½“å‰çº¿ç¨‹
+                        cachedHoldCounter = rh = readHolds.get(); // ä¸Šä¸‹æ–‡ä¸­è·å–
+                    else if (rh.count == 0) // è‹¥æ•°é‡ä¸º0
+                        readHolds.set(rh); // è®¾ç½®
                     rh.count++; // +1
                 }
-                return 1; // »ñÈ¡³É¹¦
+                return 1; // è·å–æˆåŠŸ
             }
-            // Í¨¹ı×ÔĞı·½Ê½½â¾ö»ñÈ¡ËøÊ§°ÜµÄÇé¿ö
+            // é€šè¿‡è‡ªæ—‹æ–¹å¼è§£å†³è·å–é”å¤±è´¥çš„æƒ…å†µ
             return fullTryAcquireShared(current);
         }
 
         /**
-         * ¶ÁÈ¡»ñÈ¡µÄÍêÕû°æ±¾£¬´¦ÀíCAS¶ªÊ§ºÍ¿ÉÖØÈë¶ÁÈ¡£¬tryacquireredÖĞÃ»ÓĞ´¦Àí¡£
+         * è¯»å–è·å–çš„å®Œæ•´ç‰ˆæœ¬ï¼Œå¤„ç†CASä¸¢å¤±å’Œå¯é‡å…¥è¯»å–ï¼Œtryacquireredä¸­æ²¡æœ‰å¤„ç†ã€‚
          */
         final int fullTryAcquireShared(Thread current) {
             /*
-             * ËûµÄ´úÂëÔÚÒ»¶¨³Ì¶ÈÉÏÓëtryacquireredµÄ´úÂëÊÇÈßÓàµÄ£¬µ«×ÜµÄÀ´Ëµ±È½Ï¼òµ¥£¬
-             * ÒòÎªËüÃ»ÓĞÊ¹tryacquireredÔÚÖØÊÔºÍÑÓ³Ù¶ÁÈ¡hold countÖ®¼äµÄ½»»¥±äµÃ¸´ÔÓ¡£
+             * ä»–çš„ä»£ç åœ¨ä¸€å®šç¨‹åº¦ä¸Šä¸tryacquireredçš„ä»£ç æ˜¯å†—ä½™çš„ï¼Œä½†æ€»çš„æ¥è¯´æ¯”è¾ƒç®€å•ï¼Œ
+             * å› ä¸ºå®ƒæ²¡æœ‰ä½¿tryacquireredåœ¨é‡è¯•å’Œå»¶è¿Ÿè¯»å–hold countä¹‹é—´çš„äº¤äº’å˜å¾—å¤æ‚ã€‚
              */
             HoldCounter rh = null;
-            for (;;) { // ×ÔĞı
-                int c = getState(); // ËøÌ¬
-                if (exclusiveCount(c) != 0) { // Ğ´ÈëËøÊıÁ¿²»Îª0
-                    if (getExclusiveOwnerThread() != current) // Ğ´ÈëËø²»Îªµ±Ç°Ïß³Ì
-                        return -1; // »ñÈ¡Ê§°Ü
-                    // ³ÖÓĞĞ´ÈëËø£¬×èÈûÔÚÕâ
+            for (;;) { // è‡ªæ—‹
+                int c = getState(); // é”æ€
+                if (exclusiveCount(c) != 0) { // å†™å…¥é”æ•°é‡ä¸ä¸º0
+                    if (getExclusiveOwnerThread() != current) // å†™å…¥é”ä¸ä¸ºå½“å‰çº¿ç¨‹
+                        return -1; // è·å–å¤±è´¥
+                    // æŒæœ‰å†™å…¥é”ï¼Œé˜»å¡åœ¨è¿™
                     // would cause deadlock.
-                } else if (readerShouldBlock()) { // Èç¹û¶ÁËøÓ¦¸Ã±»×èÈû
-                    // È·ÈÏÃ»ÓĞ»ñµÃ¿ÉÖØÈë¶ÁËø
+                } else if (readerShouldBlock()) { // å¦‚æœè¯»é”åº”è¯¥è¢«é˜»å¡
+                    // ç¡®è®¤æ²¡æœ‰è·å¾—å¯é‡å…¥è¯»é”
                     if (firstReader == current) {
                         // assert firstReaderHoldCount > 0;
                     } else {
@@ -443,23 +443,23 @@ public class ReentrantReadWriteLock
                             rh = cachedHoldCounter;
                             if (rh == null || rh.tid != getThreadId(current)) {
                                 rh = readHolds.get();
-                                if (rh.count == 0) // ÈôÎ´³ÖÓĞËøÔòÇå³ı
+                                if (rh.count == 0) // è‹¥æœªæŒæœ‰é”åˆ™æ¸…é™¤
                                     readHolds.remove();
                             }
                         }
                         if (rh.count == 0)
-                            return -1; // »ñÈ¡Ê§°Ü
+                            return -1; // è·å–å¤±è´¥
                     }
                 }
-                if (sharedCount(c) == MAX_COUNT) // Èô¹²ÏíËøÊıÁ¿³¬¹ı×î´óÖµÔòÅ×³öÒì³£
+                if (sharedCount(c) == MAX_COUNT) // è‹¥å…±äº«é”æ•°é‡è¶…è¿‡æœ€å¤§å€¼åˆ™æŠ›å‡ºå¼‚å¸¸
                     throw new Error("Maximum lock count exceeded");
-                if (compareAndSetState(c, c + SHARED_UNIT)) { // ÉèÖÃ¶ÁËøÊıÁ¿
-                    if (sharedCount(c) == 0) { // ¶ÁËøÊıÁ¿Îª0µÄ»°
-                        firstReader = current; // µÚÒ»¸ö»ñÈ¡¶ÁËø
-                        firstReaderHoldCount = 1; // ¶ÁËøÊıÁ¿
-                    } else if (firstReader == current) { // ÖØÈë
+                if (compareAndSetState(c, c + SHARED_UNIT)) { // è®¾ç½®è¯»é”æ•°é‡
+                    if (sharedCount(c) == 0) { // è¯»é”æ•°é‡ä¸º0çš„è¯
+                        firstReader = current; // ç¬¬ä¸€ä¸ªè·å–è¯»é”
+                        firstReaderHoldCount = 1; // è¯»é”æ•°é‡
+                    } else if (firstReader == current) { // é‡å…¥
                         firstReaderHoldCount++; // +1
-                    } else { // ·ÇµÚÒ»¸ö»ñÈ¡Ëø£¬µ÷ÓÃThreadLocalMap
+                    } else { // éç¬¬ä¸€ä¸ªè·å–é”ï¼Œè°ƒç”¨ThreadLocalMap
                         if (rh == null)
                             rh = cachedHoldCounter;
                         if (rh == null || rh.tid != getThreadId(current))
@@ -467,15 +467,15 @@ public class ReentrantReadWriteLock
                         else if (rh.count == 0)
                             readHolds.set(rh);
                         rh.count++;
-                        cachedHoldCounter = rh; // »º´æÊÍ·Å
+                        cachedHoldCounter = rh; // ç¼“å­˜é‡Šæ”¾
                     }
-                    return 1; // »ñÈ¡³É¹¦
+                    return 1; // è·å–æˆåŠŸ
                 }
             }
         }
 
         /**
-         * Ö´ĞĞĞ´ÈëËø£¬ enabling barging in both modes.
+         * æ‰§è¡Œå†™å…¥é”ï¼Œ enabling barging in both modes.
          * This is identical in effect to tryAcquire except for lack
          * of calls to writerShouldBlock.
          */
@@ -496,7 +496,7 @@ public class ReentrantReadWriteLock
         }
 
         /**
-         * Ö´ĞĞ¶ÁËø£¬ enabling barging in both modes.
+         * æ‰§è¡Œè¯»é”ï¼Œ enabling barging in both modes.
          * This is identical in effect to tryAcquireShared except for
          * lack of calls to readerShouldBlock.
          */
@@ -506,7 +506,7 @@ public class ReentrantReadWriteLock
                 int c = getState();
                 if (exclusiveCount(c) != 0 &&
                     getExclusiveOwnerThread() != current)
-                    return false; // Ê§°Ü
+                    return false; // å¤±è´¥
                 int r = sharedCount(c);
                 if (r == MAX_COUNT)
                     throw new Error("Maximum lock count exceeded");
@@ -529,38 +529,38 @@ public class ReentrantReadWriteLock
             }
         }
 
-        protected final boolean isHeldExclusively() { // ÊÇ·ñ³ÖÓĞĞ´ÈëËø
+        protected final boolean isHeldExclusively() { // æ˜¯å¦æŒæœ‰å†™å…¥é”
             // While we must in general read state before owner,
             // we don't need to do so to check if current thread is owner
             return getExclusiveOwnerThread() == Thread.currentThread();
         }
 
-        // ÒÀÀµÍâ²¿ÀàµÄ·½·¨
+        // ä¾èµ–å¤–éƒ¨ç±»çš„æ–¹æ³•
 
         final ConditionObject newCondition() {
             return new ConditionObject();
         }
 
-        final Thread getOwner() { // ËøÓµÓĞµÄÏß³Ì
+        final Thread getOwner() { // é”æ‹¥æœ‰çš„çº¿ç¨‹
             // Must read state before owner to ensure memory consistency
             return ((exclusiveCount(getState()) == 0) ?
                     null :
                     getExclusiveOwnerThread());
         }
 
-        final int getReadLockCount() { // ¶ÁËøÊıÁ¿
+        final int getReadLockCount() { // è¯»é”æ•°é‡
             return sharedCount(getState());
         }
 
-        final boolean isWriteLocked() { // ÊÇ·ñĞ´Ëø
+        final boolean isWriteLocked() { // æ˜¯å¦å†™é”
             return exclusiveCount(getState()) != 0;
         }
 
-        final int getWriteHoldCount() { // Ğ´ËøÊıÁ¿
+        final int getWriteHoldCount() { // å†™é”æ•°é‡
             return isHeldExclusively() ? exclusiveCount(getState()) : 0;
         }
 
-        final int getReadHoldCount() { // ¶ÁËø³ÖÓĞÊıÁ¿
+        final int getReadHoldCount() { // è¯»é”æŒæœ‰æ•°é‡
             if (getReadLockCount() == 0)
                 return 0;
 
@@ -595,40 +595,40 @@ public class ReentrantReadWriteLock
      */
     static final class NonfairSync extends Sync {
         private static final long serialVersionUID = -8159625535654395037L;
-        final boolean writerShouldBlock() { // ·Ç¹«Æ½ËøĞ´ÈëÓ¦¸Ã±»×èÈû
+        final boolean writerShouldBlock() { // éå…¬å¹³é”å†™å…¥åº”è¯¥è¢«é˜»å¡
             return false; // writers can always barge
         }
-        final boolean readerShouldBlock() { // ¶ÁËøÊÇ·ñÓ¦¸Ã±»×èÈû
-            /* ×÷ÎªÒ»ÖÖ±ÜÃâÎŞÏŞĞ´Æ÷¼¢¶öµÄÆô·¢Ê½·½·¨£¬Èç¹ûÔİÊ±³öÏÖµÄÏß³ÌÊÇ¶ÓÁĞµÄÍ·(Èç¹û´æÔÚ)£¬
-             * Ôò×èÈûËü¡£ÕâÖ»ÊÇÒ»ÖÖ¸ÅÂÊĞ§Ó¦£¬ÒòÎªÈç¹ûÔÚÆäËûÆôÓÃµÄ¶ÁÈ¡Æ÷ºóÃæÓĞÒ»¸öµÈ´ıµÄĞ´ÈëÆ÷£¬
-             * ¶øÕâ¸ö¶ÁÈ¡Æ÷»¹Ã»ÓĞ´Ó¶ÓÁĞÖĞÉ¾³ı£¬ÔòĞÂ¶ÁÈ¡Æ÷²»»á×èÈû¡£
+        final boolean readerShouldBlock() { // è¯»é”æ˜¯å¦åº”è¯¥è¢«é˜»å¡
+            /* ä½œä¸ºä¸€ç§é¿å…æ— é™å†™å™¨é¥¥é¥¿çš„å¯å‘å¼æ–¹æ³•ï¼Œå¦‚æœæš‚æ—¶å‡ºç°çš„çº¿ç¨‹æ˜¯é˜Ÿåˆ—çš„å¤´(å¦‚æœå­˜åœ¨)ï¼Œ
+             * åˆ™é˜»å¡å®ƒã€‚è¿™åªæ˜¯ä¸€ç§æ¦‚ç‡æ•ˆåº”ï¼Œå› ä¸ºå¦‚æœåœ¨å…¶ä»–å¯ç”¨çš„è¯»å–å™¨åé¢æœ‰ä¸€ä¸ªç­‰å¾…çš„å†™å…¥å™¨ï¼Œ
+             * è€Œè¿™ä¸ªè¯»å–å™¨è¿˜æ²¡æœ‰ä»é˜Ÿåˆ—ä¸­åˆ é™¤ï¼Œåˆ™æ–°è¯»å–å™¨ä¸ä¼šé˜»å¡ã€‚
              */
-            return apparentlyFirstQueuedIsExclusive(); // ÊÇ·ñÊÇ¶ÓÁĞµÄµÚÒ»¸öÏß³Ì
+            return apparentlyFirstQueuedIsExclusive(); // æ˜¯å¦æ˜¯é˜Ÿåˆ—çš„ç¬¬ä¸€ä¸ªçº¿ç¨‹
         }
     }
 
     /**
      * Fair version of Sync
      */
-    static final class FairSync extends Sync { // ¹«Æ½Ëø
+    static final class FairSync extends Sync { // å…¬å¹³é”
         private static final long serialVersionUID = -2274990926593161451L;
-        final boolean writerShouldBlock() { // ÊÇ·ñÓĞÇ°ÈÎ
+        final boolean writerShouldBlock() { // æ˜¯å¦æœ‰å‰ä»»
             return hasQueuedPredecessors();
         }
-        final boolean readerShouldBlock() { // ÊÇ·ñÓĞÇ°ÈÎ
+        final boolean readerShouldBlock() { // æ˜¯å¦æœ‰å‰ä»»
             return hasQueuedPredecessors();
         }
     }
 
     /**
-     * ¶ÁËø {@link ReentrantReadWriteLock#readLock}.
+     * è¯»é” {@link ReentrantReadWriteLock#readLock}.
      */
     public static class ReadLock implements Lock, java.io.Serializable {
         private static final long serialVersionUID = -5992448646407690164L;
         private final Sync sync;
 
         /**
-         * ×ÓÀà¹¹Ôì·½·¨
+         * å­ç±»æ„é€ æ–¹æ³•
          *
          * @param lock the outer lock object
          * @throws NullPointerException if the lock is null
@@ -638,7 +638,7 @@ public class ReentrantReadWriteLock
         }
 
         /**
-         * »ñÈ¡Ëø
+         * è·å–é”
          *
          * <p>Acquires the read lock if the write lock is not held by
          * another thread and returns immediately.
@@ -652,7 +652,7 @@ public class ReentrantReadWriteLock
         }
 
         /**
-         * ÖĞ¶ÏÄ£Ê½»ñÈ¡Ëø
+         * ä¸­æ–­æ¨¡å¼è·å–é”
          *
          * <p>Acquires the read lock if the write lock is not held
          * by another thread and returns immediately.
@@ -696,7 +696,7 @@ public class ReentrantReadWriteLock
         }
 
         /**
-         * »ñÈ¡¶Á
+         * è·å–è¯»
          *
          * <p>Acquires the read lock if the write lock is not held by
          * another thread and returns immediately with the value
@@ -794,7 +794,7 @@ public class ReentrantReadWriteLock
         }
 
         /**
-         * ÊÍ·ÅËø
+         * é‡Šæ”¾é”
          *
          * <p>If the number of readers is now zero then the lock
          * is made available for write lock attempts.
@@ -835,7 +835,7 @@ public class ReentrantReadWriteLock
         private final Sync sync;
 
         /**
-         * ×ÓÀà¹¹ÔìÆ÷
+         * å­ç±»æ„é€ å™¨
          *
          * @param lock the outer lock object
          * @throws NullPointerException if the lock is null
@@ -845,7 +845,7 @@ public class ReentrantReadWriteLock
         }
 
         /**
-         * »ñÈ¡Ğ´Ëø
+         * è·å–å†™é”
          *
          * <p>Acquires the write lock if neither the read nor write lock
          * are held by another thread
@@ -866,7 +866,7 @@ public class ReentrantReadWriteLock
         }
 
         /**
-         * ÖĞ¶ÏÄ£Ê½»ñÈ¡Ğ´Ëø
+         * ä¸­æ–­æ¨¡å¼è·å–å†™é”
          *
          * <p>Acquires the write lock if neither the read nor write lock
          * are held by another thread
@@ -1037,7 +1037,7 @@ public class ReentrantReadWriteLock
         }
 
         /**
-         * ÊÍ·ÅËø
+         * é‡Šæ”¾é”
          *
          * <p>If the current thread is the holder of this lock then
          * the hold count is decremented. If the hold count is now
@@ -1145,7 +1145,7 @@ public class ReentrantReadWriteLock
     // Instrumentation and status
 
     /**
-     * ÊÇ·ñ¹«Æ½Ëø
+     * æ˜¯å¦å…¬å¹³é”
      *
      * @return {@code true} if this lock has fairness set true
      */
@@ -1154,7 +1154,7 @@ public class ReentrantReadWriteLock
     }
 
     /**
-     * µÃµ½µ±Ç°³ÖÓĞËøÏß³Ì
+     * å¾—åˆ°å½“å‰æŒæœ‰é”çº¿ç¨‹
      * Returns the thread that currently owns the write lock, or
      * {@code null} if not owned. When this method is called by a
      * thread that is not the owner, the return value reflects a
@@ -1172,7 +1172,7 @@ public class ReentrantReadWriteLock
     }
 
     /**
-     * ¶ÁËøÊıÁ¿
+     * è¯»é”æ•°é‡
      * Queries the number of read locks held for this lock. This
      * method is designed for use in monitoring system state, not for
      * synchronization control.
@@ -1183,7 +1183,7 @@ public class ReentrantReadWriteLock
     }
 
     /**
-     * ÊÇ·ñĞ´Ëø
+     * æ˜¯å¦å†™é”
      * Queries if the write lock is held by any thread. This method is
      * designed for use in monitoring system state, not for
      * synchronization control.
@@ -1196,7 +1196,7 @@ public class ReentrantReadWriteLock
     }
 
     /**
-     * ÊÇ·ñ³ÖÓĞËø
+     * æ˜¯å¦æŒæœ‰é”
      * Queries if the write lock is held by the current thread.
      *
      * @return {@code true} if the current thread holds the write lock and
@@ -1207,7 +1207,7 @@ public class ReentrantReadWriteLock
     }
 
     /**
-     * Ğ´ËøÖØÈëÁ¿
+     * å†™é”é‡å…¥é‡
      * Queries the number of reentrant write holds on this lock by the
      * current thread.  A writer thread has a hold on a lock for
      * each lock action that is not matched by an unlock action.
@@ -1220,7 +1220,7 @@ public class ReentrantReadWriteLock
     }
 
     /**
-     * ¶ÁËøÊıÁ¿
+     * è¯»é”æ•°é‡
      * Queries the number of reentrant read holds on this lock by the
      * current thread.  A reader thread has a hold on a lock for
      * each lock action that is not matched by an unlock action.
@@ -1234,7 +1234,7 @@ public class ReentrantReadWriteLock
     }
 
     /**
-     * Ğ´Ëø¶ÓÁĞ
+     * å†™é”é˜Ÿåˆ—
      * Returns a collection containing threads that may be waiting to
      * acquire the write lock.  Because the actual set of threads may
      * change dynamically while constructing this result, the returned
@@ -1250,7 +1250,7 @@ public class ReentrantReadWriteLock
     }
 
     /**
-     * ¶ÁËø¶ÓÁĞ
+     * è¯»é”é˜Ÿåˆ—
      * Returns a collection containing threads that may be waiting to
      * acquire the read lock.  Because the actual set of threads may
      * change dynamically while constructing this result, the returned
@@ -1266,7 +1266,7 @@ public class ReentrantReadWriteLock
     }
 
     /**
-     * ÊÇ·ñÓĞ¶ÓÁĞ
+     * æ˜¯å¦æœ‰é˜Ÿåˆ—
      * Queries whether any threads are waiting to acquire the read or
      * write lock. Note that because cancellations may occur at any
      * time, a {@code true} return does not guarantee that any other
@@ -1281,7 +1281,7 @@ public class ReentrantReadWriteLock
     }
 
     /**
-     * ÊÇ·ñÔÚ¶ÓÁĞ
+     * æ˜¯å¦åœ¨é˜Ÿåˆ—
      * Queries whether the given thread is waiting to acquire either
      * the read or write lock. Note that because cancellations may
      * occur at any time, a {@code true} return does not guarantee
@@ -1297,7 +1297,7 @@ public class ReentrantReadWriteLock
     }
 
     /**
-     * ¶ÓÁĞ³¤¶È
+     * é˜Ÿåˆ—é•¿åº¦
      * Returns an estimate of the number of threads waiting to acquire
      * either the read or write lock.  The value is only an estimate
      * because the number of threads may change dynamically while this
@@ -1312,7 +1312,7 @@ public class ReentrantReadWriteLock
     }
 
     /**
-     * ¶ÓÁĞ
+     * é˜Ÿåˆ—
      * Returns a collection containing threads that may be waiting to
      * acquire either the read or write lock.  Because the actual set
      * of threads may change dynamically while constructing this
@@ -1328,7 +1328,7 @@ public class ReentrantReadWriteLock
     }
 
     /**
-     * ÊÇ·ñµÈ´ı
+     * æ˜¯å¦ç­‰å¾…
      * Queries whether any threads are waiting on the given condition
      * associated with the write lock. Note that because timeouts and
      * interrupts may occur at any time, a {@code true} return does
@@ -1352,7 +1352,7 @@ public class ReentrantReadWriteLock
     }
 
     /**
-     * µÈ´ı³¤¶È
+     * ç­‰å¾…é•¿åº¦
      * Returns an estimate of the number of threads waiting on the
      * given condition associated with the write lock. Note that because
      * timeouts and interrupts may occur at any time, the estimate
@@ -1376,7 +1376,7 @@ public class ReentrantReadWriteLock
     }
 
     /**
-     * µÈ´ıÏß³Ì
+     * ç­‰å¾…çº¿ç¨‹
      * Returns a collection containing those threads that may be
      * waiting on the given condition associated with the write lock.
      * Because the actual set of threads may change dynamically while
@@ -1420,7 +1420,7 @@ public class ReentrantReadWriteLock
     }
 
     /**
-     * Ïß³Ìid
+     * çº¿ç¨‹id
      * Returns the thread id for the given thread.  We must access
      * this directly rather than via method Thread.getId() because
      * getId() is not final, and has been known to be overridden in

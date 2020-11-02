@@ -312,7 +312,7 @@ public class TreeMap<K, V>
         if (size == 0 && mapSize != 0 && map instanceof SortedMap) {
             Comparator<?> c = ((SortedMap<?, ?>) map).comparator();
             if (c == comparator || (c != null && c.equals(comparator))) {
-                // ¼ÓÈëÔªËØ»á´¥·¢²¢·¢ĞŞ¸Ä¼ì²é
+                // åŠ å…¥å…ƒç´ ä¼šè§¦å‘å¹¶å‘ä¿®æ”¹æ£€æŸ¥
                 ++modCount;
                 try {
                     buildFromSorted(mapSize, map.entrySet().iterator(),
@@ -339,13 +339,13 @@ public class TreeMap<K, V>
      *                              does not permit null keys
      */
     final Entry<K, V> getEntry(Object key) {
-        // ³öÓÚĞÔÄÜ¿¼ÂÇ£¬Ğ¶ÔØ»ùÓÚ±È½ÏÆ÷µÄ°æ±¾
+        // å‡ºäºæ€§èƒ½è€ƒè™‘ï¼Œå¸è½½åŸºäºæ¯”è¾ƒå™¨çš„ç‰ˆæœ¬
         if (comparator != null)
             return getEntryUsingComparator(key);
         if (key == null)
             throw new NullPointerException();
         @SuppressWarnings("unchecked")
-        // »ùÓÚ×ÔÈ»ÅÅĞò£¬¸´ÔÓ¶Èlog£¨n£©= Ê÷µÄ¸ß¶È
+        // åŸºäºè‡ªç„¶æ’åºï¼Œå¤æ‚åº¦logï¼ˆnï¼‰= æ ‘çš„é«˜åº¦
         Comparable<? super K> k = (Comparable<? super K>) key;
         Entry<K, V> p = root;
         while (p != null) {
@@ -399,9 +399,9 @@ public class TreeMap<K, V>
                 if (p.left != null)
                     p = p.left;
                 else
-                    // p.left == null £¬Ã»ÓĞ±ÈpĞ¡µÄÁË£¬·µ»Øp
+                    // p.left == null ï¼Œæ²¡æœ‰æ¯”på°çš„äº†ï¼Œè¿”å›p
                     return p;
-            } else if (cmp > 0) {// key±Èp.key´ó
+            } else if (cmp > 0) {// keyæ¯”p.keyå¤§
                 if (p.right != null) {
                     p = p.right;
                 } else {// p.right == null
@@ -414,12 +414,12 @@ public class TreeMap<K, V>
                     //           p
                     //             \
                     //           k > ch
-                    // ÍùÉÏÒ»Ö±ÕÒ£¬ÕÒµ½´óÓÚkeyµÄ×îĞ¡Öµ
+                    // å¾€ä¸Šä¸€ç›´æ‰¾ï¼Œæ‰¾åˆ°å¤§äºkeyçš„æœ€å°å€¼
                     while (parent != null && ch == parent.right) {
                         ch = parent;
                         parent = parent.parent;
                     }
-                    // Èç¹ûch == parent.left ÔòÖ±½Ó·µ»Øparent
+                    // å¦‚æœch == parent.left åˆ™ç›´æ¥è¿”å›parent
                     return parent;
                 }
             } else
@@ -441,7 +441,7 @@ public class TreeMap<K, V>
                 if (p.right != null)
                     p = p.right;
                 else
-                    // p.right , Ã»ÓĞ±Èp¸ü´óµÄÁË£¬·µ»Øp
+                    // p.right , æ²¡æœ‰æ¯”pæ›´å¤§çš„äº†ï¼Œè¿”å›p
                     return p;
             } else if (cmp < 0) {// key < p.key
                 if (p.left != null) {
@@ -456,12 +456,12 @@ public class TreeMap<K, V>
                     //              p
                     //             /
                     //           k < ch
-                    // ÍùÉÏÒ»Ö±ÕÒ£¬ÕÒµ½Ğ¡ÓÚkeyµÄ×î´óÖµ
+                    // å¾€ä¸Šä¸€ç›´æ‰¾ï¼Œæ‰¾åˆ°å°äºkeyçš„æœ€å¤§å€¼
                     while (parent != null && ch == parent.left) {
                         ch = parent;
                         parent = parent.parent;
                     }
-                    // ÄÃµ½Ğ¡ÓÚkeyµÄ×î´óÖµ£¬chÔÚpÓÒ±ß£¬·µ»Øp
+                    // æ‹¿åˆ°å°äºkeyçš„æœ€å¤§å€¼ï¼Œchåœ¨på³è¾¹ï¼Œè¿”å›p
                     return parent;
                 }
             } else
@@ -485,13 +485,13 @@ public class TreeMap<K, V>
                 if (p.left != null)
                     p = p.left;
                 else
-                    //  p.left == null£¬pÎª´óÓÚkeyµÄ×îĞ¡Öµ
+                    //  p.left == nullï¼Œpä¸ºå¤§äºkeyçš„æœ€å°å€¼
                     return p;
             } else {
                 if (p.right != null) {
                     p = p.right;
                 } else {
-                    // p.right == null£¬²éÕÒparentÕÒµ½Îª´óÓÚkeyµÄ×îĞ¡Öµ
+                    // p.right == nullï¼ŒæŸ¥æ‰¾parentæ‰¾åˆ°ä¸ºå¤§äºkeyçš„æœ€å°å€¼
                     Entry<K, V> parent = p.parent;
                     Entry<K, V> ch = p;
                     while (parent != null && ch == parent.right) {
@@ -515,7 +515,7 @@ public class TreeMap<K, V>
         while (p != null) {
             int cmp = compare(key, p.key);
             if (cmp > 0) {
-                // key > p.key£¬P.right == null£¬·µ»Øp
+                // key > p.keyï¼ŒP.right == nullï¼Œè¿”å›p
                 if (p.right != null)
                     p = p.right;
                 else
@@ -524,7 +524,7 @@ public class TreeMap<K, V>
                 if (p.left != null) {
                     p = p.left;
                 } else {
-                    // p.left == null£¬P.key > key£¬Ïòparent²éÕÒ£¬Ğ¡ÓÚkeyµÄ×î´óparent
+                    // p.left == nullï¼ŒP.key > keyï¼Œå‘parentæŸ¥æ‰¾ï¼Œå°äºkeyçš„æœ€å¤§parent
                     Entry<K, V> parent = p.parent;
                     Entry<K, V> ch = p;
                     while (parent != null && ch == parent.left) {
@@ -558,20 +558,20 @@ public class TreeMap<K, V>
     public V put(K key, V value) {
         Entry<K, V> t = root;
 
-        // Èô¸ù½ÚµãÎª¿Õ£¬Ôò´«Èë·Ç¿Õ½ÚµãÎª¸ù½Úµã
+        // è‹¥æ ¹èŠ‚ç‚¹ä¸ºç©ºï¼Œåˆ™ä¼ å…¥éç©ºèŠ‚ç‚¹ä¸ºæ ¹èŠ‚ç‚¹
         if (t == null) {
-            compare(key, key); // ÀàĞÍ(¿ÉÄÜÎª¿Õ)¼ì²é
+            compare(key, key); // ç±»å‹(å¯èƒ½ä¸ºç©º)æ£€æŸ¥
 
             root = new Entry<>(key, value, null);
             size = 1;
-            // ¼ÓÈëÔªËØ´¥·¢²¢·¢ĞŞ¸Ä¼ì²é
+            // åŠ å…¥å…ƒç´ è§¦å‘å¹¶å‘ä¿®æ”¹æ£€æŸ¥
             modCount++;
             return null;
         }
 
         int cmp;
         Entry<K, V> parent;
-        // ·Ö¸î±È½ÏÆ÷ºÍ±È½ÏÂ·¾¶
+        // åˆ†å‰²æ¯”è¾ƒå™¨å’Œæ¯”è¾ƒè·¯å¾„
         Comparator<? super K> cpr = comparator;
         if (cpr != null) {
             do {
@@ -581,10 +581,10 @@ public class TreeMap<K, V>
                     t = t.left;
                 else if (cmp > 0)
                     t = t.right;
-                else // ÕÒµ½½Úµã£¬Ìæ»»value
+                else // æ‰¾åˆ°èŠ‚ç‚¹ï¼Œæ›¿æ¢value
                     return t.setValue(value);
             } while (t != null);
-        } else {        // Èç¹û±È½ÏÆ÷Îªnull£¬×ÔÈ»ÅÅĞò
+        } else {        // å¦‚æœæ¯”è¾ƒå™¨ä¸ºnullï¼Œè‡ªç„¶æ’åº
             if (key == null)
                 throw new NullPointerException();
             @SuppressWarnings("unchecked")
@@ -597,18 +597,18 @@ public class TreeMap<K, V>
                 else if (cmp > 0)
                     t = t.right;
                 else
-                    // ÕÒµ½½Úµã£¬Ìæ»»value
+                    // æ‰¾åˆ°èŠ‚ç‚¹ï¼Œæ›¿æ¢value
                     return t.setValue(value);
             } while (t != null);
         }
-        // ×ßµ½Õâ»¹Ã»returnµÄ»°£¬ËµÃ÷Ã»ÕÒµ½key£¬Ö®ºóµÄ²Ù×÷¾Í¸´ÔÓÁËÈ¥ÁË
-        // parentÎªÓĞ¸ö×Ó½ÚµãÎª¿Õ½ÚµãµÄ½Úµã£¬putµÄ½Úµã£¬Ó¦¸Ã´æÓÚ¸Ã½ÚµãÏÂÃæ
+        // èµ°åˆ°è¿™è¿˜æ²¡returnçš„è¯ï¼Œè¯´æ˜æ²¡æ‰¾åˆ°keyï¼Œä¹‹åçš„æ“ä½œå°±å¤æ‚äº†å»äº†
+        // parentä¸ºæœ‰ä¸ªå­èŠ‚ç‚¹ä¸ºç©ºèŠ‚ç‚¹çš„èŠ‚ç‚¹ï¼Œputçš„èŠ‚ç‚¹ï¼Œåº”è¯¥å­˜äºè¯¥èŠ‚ç‚¹ä¸‹é¢
         Entry<K, V> e = new Entry<>(key, value, parent);
         if (cmp < 0) // t.left == null
             parent.left = e;
         else // t.right == null
             parent.right = e;
-        // ÕâÓ¦¸ÃÊÇĞı×ªÊ÷è¾
+        // è¿™åº”è¯¥æ˜¯æ—‹è½¬æ ‘æˆ
         fixAfterInsertion(e);
         size++;
         modCount++;
@@ -738,7 +738,7 @@ public class TreeMap<K, V>
      * @since 1.6
      */
     public K lowerKey(K key) {
-        // ÅĞ¶ÏentryÊÇ·ñÎªnull£¬²»Îªnull£¬È¡e.key
+        // åˆ¤æ–­entryæ˜¯å¦ä¸ºnullï¼Œä¸ä¸ºnullï¼Œå–e.key
         return keyOrNull(getLowerEntry(key));
     }
 
@@ -761,7 +761,7 @@ public class TreeMap<K, V>
      * @since 1.6
      */
     public K floorKey(K key) {
-        // ÅĞ¶ÏentryÊÇ·ñÎªnull£¬²»Îªnull£¬È¡e.key
+        // åˆ¤æ–­entryæ˜¯å¦ä¸ºnullï¼Œä¸ä¸ºnullï¼Œå–e.key
         return keyOrNull(getFloorEntry(key));
     }
 
@@ -1029,10 +1029,10 @@ public class TreeMap<K, V>
     public void forEach(BiConsumer<? super K, ? super V> action) {
         Objects.requireNonNull(action);
         int expectedModCount = modCount;
-        // ÖĞĞò±éÀú£¬°´´ÓĞ¡µ½´ó
+        // ä¸­åºéå†ï¼ŒæŒ‰ä»å°åˆ°å¤§
         for (Entry<K, V> e = getFirstEntry(); e != null; e = successor(e)) {
             action.accept(e.key, e.value);
-            // ·ÀÖ¹²Ù×÷¹ı³ÌĞŞ¸ÄÁËÔªËØÒı·¢´íÎó
+            // é˜²æ­¢æ“ä½œè¿‡ç¨‹ä¿®æ”¹äº†å…ƒç´ å¼•å‘é”™è¯¯
             if (expectedModCount != modCount) {
                 throw new ConcurrentModificationException();
             }
@@ -1043,10 +1043,10 @@ public class TreeMap<K, V>
     public void replaceAll(BiFunction<? super K, ? super V, ? extends V> function) {
         Objects.requireNonNull(function);
         int expectedModCount = modCount;
-        // ÖĞĞò±éÀú£¬°´´ÓĞ¡µ½´ó
+        // ä¸­åºéå†ï¼ŒæŒ‰ä»å°åˆ°å¤§
         for (Entry<K, V> e = getFirstEntry(); e != null; e = successor(e)) {
             e.value = function.apply(e.key, e.value);
-            // ·ÀÖ¹²Ù×÷¹ı³ÌĞŞ¸ÄÁËÔªËØÒı·¢´íÎó
+            // é˜²æ­¢æ“ä½œè¿‡ç¨‹ä¿®æ”¹äº†å…ƒç´ å¼•å‘é”™è¯¯
             if (expectedModCount != modCount) {
                 throw new ConcurrentModificationException();
             }
@@ -1056,7 +1056,7 @@ public class TreeMap<K, V>
     // View class support
 
     class Values extends AbstractCollection<V> {
-        // ·µ»Øvaluesµü´úÆ÷
+        // è¿”å›valuesè¿­ä»£å™¨
         public Iterator<V> iterator() {
             return new ValueIterator(getFirstEntry());
         }
@@ -1070,7 +1070,7 @@ public class TreeMap<K, V>
         }
 
         public boolean remove(Object o) {
-            // ÖĞĞò±éÀú£¬°´´ÓĞ¡µ½´ó
+            // ä¸­åºéå†ï¼ŒæŒ‰ä»å°åˆ°å¤§
             for (Entry<K, V> e = getFirstEntry(); e != null; e = successor(e)) {
                 if (valEquals(e.getValue(), o)) {
                     deleteEntry(e);
@@ -1090,7 +1090,7 @@ public class TreeMap<K, V>
     }
 
     class EntrySet extends AbstractSet<Map.Entry<K, V>> {
-        // ·µ»ØEntryµü´úÆ÷
+        // è¿”å›Entryè¿­ä»£å™¨
         public Iterator<Map.Entry<K, V>> iterator() {
             return new EntryIterator(getFirstEntry());
         }
@@ -1265,20 +1265,20 @@ public class TreeMap<K, V>
     /**
      * Base class for TreeMap Iterators
      */
-//  ÊµÏÖµü´úÆ÷½Ó¿Ú
+//  å®ç°è¿­ä»£å™¨æ¥å£
     abstract class PrivateEntryIterator<T> implements Iterator<T> {
-        Entry<K,V> next; // µü´úµÄÏÂÒ»¸öÔªËØ
-        Entry<K,V> lastReturned;// µ±Ç°µÄÔªËØ
-        int expectedModCount; // ÎªÁËµü´úÆ÷¼ş±ÜÃâ±»ĞŞ¸Ä
+        Entry<K,V> next; // è¿­ä»£çš„ä¸‹ä¸€ä¸ªå…ƒç´ 
+        Entry<K,V> lastReturned;// å½“å‰çš„å…ƒç´ 
+        int expectedModCount; // ä¸ºäº†è¿­ä»£å™¨ä»¶é¿å…è¢«ä¿®æ”¹
 
         PrivateEntryIterator(Entry<K,V> first) {
-            // ÎªÁËµü´úÆ÷¼ş±ÜÃâ±»ĞŞ¸Ä
+            // ä¸ºäº†è¿­ä»£å™¨ä»¶é¿å…è¢«ä¿®æ”¹
             expectedModCount = modCount;
             lastReturned = null;
             next = first;
         }
 
-        // ÏÂÒ»¸öÔªËØÊÇ·ñÎªnull
+        // ä¸‹ä¸€ä¸ªå…ƒç´ æ˜¯å¦ä¸ºnull
         public final boolean hasNext() {
             return next != null;
         }
@@ -1289,13 +1289,13 @@ public class TreeMap<K, V>
                 throw new NoSuchElementException();
             if (modCount != expectedModCount)
                 throw new ConcurrentModificationException();
-            // ÖĞĞò±éÀúÈ¡ÔªËØ
-            next = successor(e);// ÏÂÒ»¸öÔªËØ
-            lastReturned = e; // µ±Ç°ÔªËØ
+            // ä¸­åºéå†å–å…ƒç´ 
+            next = successor(e);// ä¸‹ä¸€ä¸ªå…ƒç´ 
+            lastReturned = e; // å½“å‰å…ƒç´ 
             return e;
         }
 
-        // Ç°Ò»¸öÔªËØ
+        // å‰ä¸€ä¸ªå…ƒç´ 
         final Entry<K,V> prevEntry() {
             Entry<K,V> e = next;
             if (e == null)
@@ -1307,13 +1307,13 @@ public class TreeMap<K, V>
             return e;
         }
 
-        // ÒÆ³ıºó¶Ôµü´úÆ÷À´Ëµ
+        // ç§»é™¤åå¯¹è¿­ä»£å™¨æ¥è¯´
         public void remove() {
             if (lastReturned == null)
                 throw new IllegalStateException();
             if (modCount != expectedModCount)
                 throw new ConcurrentModificationException();
-            // É¾³ıµÄÔªËØ»á±»Ìæ»»ÎªÏÂÒ»¸öÔªËØ
+            // åˆ é™¤çš„å…ƒç´ ä¼šè¢«æ›¿æ¢ä¸ºä¸‹ä¸€ä¸ªå…ƒç´ 
             if (lastReturned.left != null && lastReturned.right != null)
                 next = lastReturned;
             deleteEntry(lastReturned);
@@ -2439,18 +2439,18 @@ public class TreeMap<K, V>
     private void fixAfterInsertion(Entry<K,V> x) {
         x.color = RED;
 
-// ¸¸½ÚµãÎªºÚÉ«µÄ»°£¬ÎŞĞèĞı×ª£¬Ö±½Óreturn
-// ºìºÚÊ÷ÊÇÒ»ÖÖºÚÆ½ºâ£¬Æ½ºâµÄ½ÚµãÉÏ£¬×î¶àÖ»ÄÜÓĞÒ»¸öºÚ½Úµã£¬Ò»¸öºì½Úµã£¬ºì½Úµã±ØĞëÁ¬ÔÚºÚ½ÚµãÉÏÃæ£¬Ò²¾ÍÊÇËµºì½ÚµãµÄ¸¸½ÚµãÒ»¶¨ÊÇºÚ½Úµã
-// ËùÒÔËµÈç¹ûÒ»¸öºì½ÚµãµÄ¸¸½ÚµãÊÇºìµÄ£¬Õâ¸öÆ½ºâ½Úµã¾ÍÈı¸ö½ÚµãÁË£¬ËùÒÔ·ÇÆ½ºâ£¬ĞèÒªĞı×ªµ÷½Ú
+// çˆ¶èŠ‚ç‚¹ä¸ºé»‘è‰²çš„è¯ï¼Œæ— éœ€æ—‹è½¬ï¼Œç›´æ¥return
+// çº¢é»‘æ ‘æ˜¯ä¸€ç§é»‘å¹³è¡¡ï¼Œå¹³è¡¡çš„èŠ‚ç‚¹ä¸Šï¼Œæœ€å¤šåªèƒ½æœ‰ä¸€ä¸ªé»‘èŠ‚ç‚¹ï¼Œä¸€ä¸ªçº¢èŠ‚ç‚¹ï¼Œçº¢èŠ‚ç‚¹å¿…é¡»è¿åœ¨é»‘èŠ‚ç‚¹ä¸Šé¢ï¼Œä¹Ÿå°±æ˜¯è¯´çº¢èŠ‚ç‚¹çš„çˆ¶èŠ‚ç‚¹ä¸€å®šæ˜¯é»‘èŠ‚ç‚¹
+// æ‰€ä»¥è¯´å¦‚æœä¸€ä¸ªçº¢èŠ‚ç‚¹çš„çˆ¶èŠ‚ç‚¹æ˜¯çº¢çš„ï¼Œè¿™ä¸ªå¹³è¡¡èŠ‚ç‚¹å°±ä¸‰ä¸ªèŠ‚ç‚¹äº†ï¼Œæ‰€ä»¥éå¹³è¡¡ï¼Œéœ€è¦æ—‹è½¬è°ƒèŠ‚
         while (x != null && x != root && x.parent.color == RED) {
-            // xµÄ¸¸½Úµã   ÊÇ·ñµÈÓÚ    xµÄ¸¸½ÚµãµÄ¸¸½ÚµãµÄ×ó½Úµã
+            // xçš„çˆ¶èŠ‚ç‚¹   æ˜¯å¦ç­‰äº    xçš„çˆ¶èŠ‚ç‚¹çš„çˆ¶èŠ‚ç‚¹çš„å·¦èŠ‚ç‚¹
             //                50
             //               /  \
             //             30   70
             //            /
             //          x = 20
             if (parentOf(x) == leftOf(parentOf(parentOf(x)))) {
-                // ÄÃµ½x¸¸½ÚµãµÄ¸¸½ÚµãµÄÓÒº¢×Ó
+                // æ‹¿åˆ°xçˆ¶èŠ‚ç‚¹çš„çˆ¶èŠ‚ç‚¹çš„å³å­©å­
                 Entry<K,V> y = rightOf(parentOf(parentOf(x)));
                 if (colorOf(y) == RED) {
                     //                50(B)
@@ -2458,13 +2458,13 @@ public class TreeMap<K, V>
                     //         (R)30   70(R)
                     //            /
                     //      (R)x = 20
-                    // ÈÃxµÄ¸¸½Úµã±ä³ÉºÚÉ«
+                    // è®©xçš„çˆ¶èŠ‚ç‚¹å˜æˆé»‘è‰²
                     setColor(parentOf(x), BLACK);
-                    // y±ä³ÉºÚÉ«
+                    // yå˜æˆé»‘è‰²
                     setColor(y, BLACK);
-                    // xµÄ¸¸½ÚµãµÄ¸¸½Úµã±ä³ÉºìÉ«
+                    // xçš„çˆ¶èŠ‚ç‚¹çš„çˆ¶èŠ‚ç‚¹å˜æˆçº¢è‰²
                     setColor(parentOf(parentOf(x)), RED);
-                    // xµÈÓÚxµÄ¸¸½ÚµãµÄ¸¸½Úµã
+                    // xç­‰äºxçš„çˆ¶èŠ‚ç‚¹çš„çˆ¶èŠ‚ç‚¹
                     x = parentOf(parentOf(x));
                 } else {
                     //                50(B)
@@ -2481,7 +2481,7 @@ public class TreeMap<K, V>
                     rotateRight(parentOf(parentOf(x)));
                 }
             } else {
-                // xµÄ¸¸½Úµã   ÊÇ·ñµÈÓÚ    xµÄ¸¸½ÚµãµÄ¸¸½ÚµãµÄÓÒ½Úµã
+                // xçš„çˆ¶èŠ‚ç‚¹   æ˜¯å¦ç­‰äº    xçš„çˆ¶èŠ‚ç‚¹çš„çˆ¶èŠ‚ç‚¹çš„å³èŠ‚ç‚¹
                 //                50
                 //                  \
                 //                 30
@@ -2511,28 +2511,28 @@ public class TreeMap<K, V>
      * Delete node p, and then rebalance the tree.
      */
     private void deleteEntry(Entry<K,V> p) {
-        // ¸Ä±ä+1
+        // æ”¹å˜+1
         modCount++;
-        // ´óĞ¡¼õÒ»
+        // å¤§å°å‡ä¸€
         size--;
 
-        // ×óÓÒ×ÓÊ÷¶¼²»Îª¿ÕµÄÇé¿ö
+        // å·¦å³å­æ ‘éƒ½ä¸ä¸ºç©ºçš„æƒ…å†µ
         if (p.left != null && p.right != null) {
-            // ÖĞĞò±éÀú£¬ÕÒµ½±Èµ±Ç°½Úµã´óµÄ×îĞ¡Öµ£¬È»ºóÌæ»»¸ÃÖµ£¬ÒÆĞÎ»»Î»
+            // ä¸­åºéå†ï¼Œæ‰¾åˆ°æ¯”å½“å‰èŠ‚ç‚¹å¤§çš„æœ€å°å€¼ï¼Œç„¶åæ›¿æ¢è¯¥å€¼ï¼Œç§»å½¢æ¢ä½
             Entry<K,V> s = successor(p);
             p.key = s.key;
             p.value = s.value;
             p = s;
         }
 
-        // pÓÒ±ßÎªnull£¬×ó±ß²»Îªnull£¬×ó×ÓÊ÷Ìæ»»p
-        // ×ó±ßÎªnull£¬ÓÒ±ß²»Îªnull£¬ÓÒ×ÓÊ÷Ìæ»»p
-        // ×óÓÒ×ÓÊ÷¶¼Îªnull£¬ÈôºÚ£¬Æ½ºâºóÉ¾³ı
-        // ²»¿ÉÄÜ×óÓÒ×ÓÊ÷¶¼²»Îªnull£¬¾­¹ıÉÏÃæµÄÅĞ¶Ï
+        // på³è¾¹ä¸ºnullï¼Œå·¦è¾¹ä¸ä¸ºnullï¼Œå·¦å­æ ‘æ›¿æ¢p
+        // å·¦è¾¹ä¸ºnullï¼Œå³è¾¹ä¸ä¸ºnullï¼Œå³å­æ ‘æ›¿æ¢p
+        // å·¦å³å­æ ‘éƒ½ä¸ºnullï¼Œè‹¥é»‘ï¼Œå¹³è¡¡ååˆ é™¤
+        // ä¸å¯èƒ½å·¦å³å­æ ‘éƒ½ä¸ä¸ºnullï¼Œç»è¿‡ä¸Šé¢çš„åˆ¤æ–­
         Entry<K,V> replacement = (p.left != null ? p.left : p.right);
 
         if (replacement != null) {
-            // ²»ÊÇpµÄ×ó×ÓÊ÷Îª¿Õ£¬¾ÍÊÇpµÄÓÒ×ÓÊ÷¿Õ
+            // ä¸æ˜¯pçš„å·¦å­æ ‘ä¸ºç©ºï¼Œå°±æ˜¯pçš„å³å­æ ‘ç©º
             replacement.parent = p.parent;
             if (p.parent == null)
                 root = replacement;
@@ -2541,23 +2541,23 @@ public class TreeMap<K, V>
             else
                 p.parent.right = replacement;
 
-            // Çå¿ÕpµÄÒıÓÃ
+            // æ¸…ç©ºpçš„å¼•ç”¨
             p.left = p.right = p.parent = null;
 
-            // Èç¹ûpÊÇºÚÉ«½Úµã£¬ĞèÒªĞŞ¸´Æ½ºâ
+            // å¦‚æœpæ˜¯é»‘è‰²èŠ‚ç‚¹ï¼Œéœ€è¦ä¿®å¤å¹³è¡¡
             //
             if (p.color == BLACK)
-                // Èç¹ûreplacementÊÇºìÉ«µÄ£¬Ö±½Ó°ÑºìÉ«±ä³ÉºÚÉ«£¬¾ÍÆ½ºâÁË
+                // å¦‚æœreplacementæ˜¯çº¢è‰²çš„ï¼Œç›´æ¥æŠŠçº¢è‰²å˜æˆé»‘è‰²ï¼Œå°±å¹³è¡¡äº†
                 fixAfterDeletion(replacement);
-        } else if (p.parent == null) { // Èç¹ûÖ»ÓĞÒ»¸ö½Úµã£¬Ö±½Óroot=null
+        } else if (p.parent == null) { // å¦‚æœåªæœ‰ä¸€ä¸ªèŠ‚ç‚¹ï¼Œç›´æ¥root=null
             root = null;
         } else { //  No children. Use self as phantom replacement and unlink.
-            // Èç¹ûÃ»ÓĞº¢×Ó£¬Èç¹ûÊÇºìÉ«£¬Ö±½ÓÉ¾³ı£¬²»Ó°ÏìºÚÆ½ºâ¡£
-            // Èç¹ûÊÇºÚÉ«£¬É¾ÁË»áÓ°ÏìºÚÆ½ºâ£¬ËùÒÔĞèÒªĞŞ¸´Æ½ºâ
+            // å¦‚æœæ²¡æœ‰å­©å­ï¼Œå¦‚æœæ˜¯çº¢è‰²ï¼Œç›´æ¥åˆ é™¤ï¼Œä¸å½±å“é»‘å¹³è¡¡ã€‚
+            // å¦‚æœæ˜¯é»‘è‰²ï¼Œåˆ äº†ä¼šå½±å“é»‘å¹³è¡¡ï¼Œæ‰€ä»¥éœ€è¦ä¿®å¤å¹³è¡¡
             if (p.color == BLACK)
                 fixAfterDeletion(p);
 
-            // °ÑÉ¾³ıµÄ½ÚµãÒıÓÃÎªnull
+            // æŠŠåˆ é™¤çš„èŠ‚ç‚¹å¼•ç”¨ä¸ºnull
             if (p.parent != null) {
                 if (p == p.parent.left)
                     p.parent.left = null;
@@ -2572,10 +2572,10 @@ public class TreeMap<K, V>
      * From CLR
      */
     private void fixAfterDeletion(Entry<K,V> x) {
-        // ÑÕÉ«ÎªºÚÉ«£¬xÊÇ±»É¾µÄ½Úµã£¬»òÕßÌæ»»µÄ½Úµã
-        // ËùÓĞ²Ù×÷½ö¶ÔxµÄ¸¸½ÚµãºÍĞÖµÜ½Úµã²Ù×÷
+        // é¢œè‰²ä¸ºé»‘è‰²ï¼Œxæ˜¯è¢«åˆ çš„èŠ‚ç‚¹ï¼Œæˆ–è€…æ›¿æ¢çš„èŠ‚ç‚¹
+        // æ‰€æœ‰æ“ä½œä»…å¯¹xçš„çˆ¶èŠ‚ç‚¹å’Œå…„å¼ŸèŠ‚ç‚¹æ“ä½œ
         while (x != root && colorOf(x) == BLACK) {
-            // Èç¹ûxÎª×ó×ÓÊ÷£¬ÄÃµ½ÓÒ×ÓÊ÷
+            // å¦‚æœxä¸ºå·¦å­æ ‘ï¼Œæ‹¿åˆ°å³å­æ ‘
             if (x == leftOf(parentOf(x))) {
                 Entry<K,V> sib = rightOf(parentOf(x));
 
@@ -2588,28 +2588,28 @@ public class TreeMap<K, V>
                 }
 
 
-                // sibµ×ÏÂµÄÈç¹û¶¼ÊÇºÚÉ«µÄsib±äºìÉ«¾ÍĞĞÁË£¬Ö»Òª¸¸½Úµã²»ÊÇºìÉ«¾ÍĞĞ
+                // sibåº•ä¸‹çš„å¦‚æœéƒ½æ˜¯é»‘è‰²çš„sibå˜çº¢è‰²å°±è¡Œäº†ï¼Œåªè¦çˆ¶èŠ‚ç‚¹ä¸æ˜¯çº¢è‰²å°±è¡Œ
                 if (colorOf(leftOf(sib))  == BLACK &&
                         colorOf(rightOf(sib)) == BLACK) {
                     setColor(sib, RED);
                     x = parentOf(x);
                 } else {
-                    // Ö»ÒªÌøµ½Õâ¸ö¿é£¬Æ½ºâ¾Í½áÊøÁË,×î¶à¾­¹ıÁ½´ÎĞı×ª
+                    // åªè¦è·³åˆ°è¿™ä¸ªå—ï¼Œå¹³è¡¡å°±ç»“æŸäº†,æœ€å¤šç»è¿‡ä¸¤æ¬¡æ—‹è½¬
                     if (colorOf(rightOf(sib)) == BLACK) {
                         setColor(leftOf(sib), BLACK);
                         setColor(sib, RED);
                         rotateRight(sib);
                         sib = rightOf(parentOf(x));
                     }
-                    // ÕâÀïÈç¹ûcolorOf(rightOf(sib)) == RED
-                    // ÕâÀïÖÈÖ»ĞèÒ»´Î×óĞı×ª¾ÍÆ½ºâÁË
+                    // è¿™é‡Œå¦‚æœcolorOf(rightOf(sib)) == RED
+                    // è¿™é‡Œç§©åªéœ€ä¸€æ¬¡å·¦æ—‹è½¬å°±å¹³è¡¡äº†
                     setColor(sib, colorOf(parentOf(x)));
                     setColor(parentOf(x), BLACK);
                     setColor(rightOf(sib), BLACK);
                     rotateLeft(parentOf(x));
                     x = root;
                 }
-            } else {//  Èç¹ûxÎªÓÒ×ÓÊ÷£¬ÄÃ×ó×ÓÊ÷
+            } else {//  å¦‚æœxä¸ºå³å­æ ‘ï¼Œæ‹¿å·¦å­æ ‘
                 Entry<K,V> sib = leftOf(parentOf(x));
 
                 if (colorOf(sib) == RED) {
@@ -2638,9 +2638,9 @@ public class TreeMap<K, V>
                 }
             }
         }
-        // ºËĞÄË¼Ïë£¬·´ÕıºÚÆ½ºâ£¬ºÚ×Ó²»ÊÇÒ»¸ö£¬¾ÍÊÇ3¸ö£¬¾ÍÊÇ4¸ö£¬¾ÍÊÇ7¸ö£¬ÒÔ´ËÀàÍÆ¡£¡£
-        // É¾¸öºÚÉ«µÄ£¬ÕÒ¸öºìÉ«µÄ½Úµã£¬±ä³ÉºÚÉ«£¬¾ÍÍêÊÂÁË
-        // Èç¹û¶¼ÊÇºÚÉ«½Úµã£¬±ä²»ÁË£¬ÄÇ¾Í±ä¸öºìÉ«µÄ£¬7-1=6¸öºÚÉ«£¬°Ñ2¸ö±äºì¾ÍÆ½ºâÁË¡£¡£¡£
+        // æ ¸å¿ƒæ€æƒ³ï¼Œåæ­£é»‘å¹³è¡¡ï¼Œé»‘å­ä¸æ˜¯ä¸€ä¸ªï¼Œå°±æ˜¯3ä¸ªï¼Œå°±æ˜¯4ä¸ªï¼Œå°±æ˜¯7ä¸ªï¼Œä»¥æ­¤ç±»æ¨ã€‚ã€‚
+        // åˆ ä¸ªé»‘è‰²çš„ï¼Œæ‰¾ä¸ªçº¢è‰²çš„èŠ‚ç‚¹ï¼Œå˜æˆé»‘è‰²ï¼Œå°±å®Œäº‹äº†
+        // å¦‚æœéƒ½æ˜¯é»‘è‰²èŠ‚ç‚¹ï¼Œå˜ä¸äº†ï¼Œé‚£å°±å˜ä¸ªçº¢è‰²çš„ï¼Œ7-1=6ä¸ªé»‘è‰²ï¼ŒæŠŠ2ä¸ªå˜çº¢å°±å¹³è¡¡äº†ã€‚ã€‚ã€‚
         setColor(x, BLACK);
     }
 
@@ -2664,7 +2664,7 @@ public class TreeMap<K, V>
         s.defaultWriteObject();
 
         // Write out size (number of Mappings)
-        // Ğ´³ö´óĞ¡£¨Ó³ÉäÊıÁ¿£©
+        // å†™å‡ºå¤§å°ï¼ˆæ˜ å°„æ•°é‡ï¼‰
         s.writeInt(size);
 
         // Write out keys and values (alternating)
@@ -2771,44 +2771,44 @@ public class TreeMap<K, V>
                                              V defaultVal)
             throws  java.io.IOException, ClassNotFoundException {
 
-// ²ßÂÔ:¸ùÊÇmiddlemostÔªËØ¡£ÎªÁËµÃµ½Ëü£¬ÎÒÃÇ±ØĞëÏÈµİ¹éµØ¹¹ÔìÕû¸ö×ó×ÓÊ÷£¬ÒÔ±ã»ñÈ¡ËüµÄËùÓĞÔªËØ¡£È»ºóÎÒÃÇ¿ÉÒÔ¼ÌĞøÊ¹ÓÃÓÒ×ÓÊ÷¡£
+// ç­–ç•¥:æ ¹æ˜¯middlemostå…ƒç´ ã€‚ä¸ºäº†å¾—åˆ°å®ƒï¼Œæˆ‘ä»¬å¿…é¡»å…ˆé€’å½’åœ°æ„é€ æ•´ä¸ªå·¦å­æ ‘ï¼Œä»¥ä¾¿è·å–å®ƒçš„æ‰€æœ‰å…ƒç´ ã€‚ç„¶åæˆ‘ä»¬å¯ä»¥ç»§ç»­ä½¿ç”¨å³å­æ ‘ã€‚
 
-// loºÍhi²ÎÊıÊÇµ±Ç°×ÓÊ÷µÄµü´úÆ÷»òÁ÷ÖĞÌáÈ¡µÄ×îĞ¡ºÍ×î´óË÷Òı£¬ËüÃÇÊµ¼ÊÉÏÃ»ÓĞÕæÕıË÷Òı£¬ÎÒÃÇÖ»ÊÇ°´Ë³Ğò½øĞĞ£¬È·±£°´ÏàÓ¦µÄË³ĞòÌáÈ¡Ïî¡£
+// loå’Œhiå‚æ•°æ˜¯å½“å‰å­æ ‘çš„è¿­ä»£å™¨æˆ–æµä¸­æå–çš„æœ€å°å’Œæœ€å¤§ç´¢å¼•ï¼Œå®ƒä»¬å®é™…ä¸Šæ²¡æœ‰çœŸæ­£ç´¢å¼•ï¼Œæˆ‘ä»¬åªæ˜¯æŒ‰é¡ºåºè¿›è¡Œï¼Œç¡®ä¿æŒ‰ç›¸åº”çš„é¡ºåºæå–é¡¹ã€‚
 
-// ÕâÊÇµİ¹éµÄÖÕÖ¹Ìõ¼ş£¬·ñÔò¾ÍÎŞÏŞµİ¹éÏÂÈ¥ÁË
+// è¿™æ˜¯é€’å½’çš„ç»ˆæ­¢æ¡ä»¶ï¼Œå¦åˆ™å°±æ— é™é€’å½’ä¸‹å»äº†
         if (hi < lo) return null;
 
-// ÕâÏàµ±ÓÚ³ı¶ş£¬Å£±Æ
+// è¿™ç›¸å½“äºé™¤äºŒï¼Œç‰›é€¼
         int mid = (lo + hi) >>> 1;
 
-// lo = 0,hi = size-1 £¬Õâ¸öË÷ÒıÊÇÍêÈ«¶ş²æÊ÷
-// ÏÈ¹¹½¨×ó×ÓÊ÷£¬µ±loĞ¡ÓÚmid - 1µÄÊ±ºò£¬
+// lo = 0,hi = size-1 ï¼Œè¿™ä¸ªç´¢å¼•æ˜¯å®Œå…¨äºŒå‰æ ‘
+// å…ˆæ„å»ºå·¦å­æ ‘ï¼Œå½“loå°äºmid - 1çš„æ—¶å€™ï¼Œ
         Entry<K,V> left  = null;
         if (lo < mid)
             left = buildFromSorted(level+1, lo, mid - 1, redLevel,
                     it, str, defaultVal);
 
-        // ´Óµü´úÆ÷»òÁ÷ÖĞÌáÈ¡¼üºÍÖµ
+        // ä»è¿­ä»£å™¨æˆ–æµä¸­æå–é”®å’Œå€¼
         K key;
         V value;
-        if (it != null) { // ÕâÀïÓÃµü´úÆ÷
-            if (defaultVal==null) { // Ã»ÓĞÄ¬ÈÏÖµµÄÇé¿öÏÂ
+        if (it != null) { // è¿™é‡Œç”¨è¿­ä»£å™¨
+            if (defaultVal==null) { // æ²¡æœ‰é»˜è®¤å€¼çš„æƒ…å†µä¸‹
                 Map.Entry<?,?> entry = (Map.Entry<?,?>)it.next();
                 key = (K)entry.getKey();
                 value = (V)entry.getValue();
-            } else { // ÓĞÄ¬ÈÏÖµµÄÇé¿ö
+            } else { // æœ‰é»˜è®¤å€¼çš„æƒ…å†µ
                 key = (K)it.next();
                 value = defaultVal;
             }
-        } else { // use stream µü´úÆ÷Îªnull£¬ÄÇ¾ÍÓÃÁ÷ßÂ
+        } else { // use stream è¿­ä»£å™¨ä¸ºnullï¼Œé‚£å°±ç”¨æµå‘—
             key = (K) str.readObject();
             value = (defaultVal != null ? defaultVal : (V) str.readObject());
         }
 
-        // ĞÂ½Úµã
+        // æ–°èŠ‚ç‚¹
         Entry<K,V> middle =  new Entry<>(key, value, null);
 
-        // Ö»ÓĞ×îµ×²ã²»ÂúµÄ½Úµã£¬²ÅÊÇºìÉ«½Úµã
+        // åªæœ‰æœ€åº•å±‚ä¸æ»¡çš„èŠ‚ç‚¹ï¼Œæ‰æ˜¯çº¢è‰²èŠ‚ç‚¹
         if (level == redLevel)
             middle.color = RED;
 
@@ -2817,7 +2817,7 @@ public class TreeMap<K, V>
             left.parent = middle;
         }
 
-        // ¹¹ÔìÓÒ½Úµã
+        // æ„é€ å³èŠ‚ç‚¹
         if (mid < hi) {
             Entry<K,V> right = buildFromSorted(level+1, mid+1, hi, redLevel,
                     it, str, defaultVal);

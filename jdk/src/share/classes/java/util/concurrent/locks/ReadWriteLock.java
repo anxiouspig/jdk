@@ -118,14 +118,14 @@ package java.util.concurrent.locks;
  */
 public interface ReadWriteLock {
     /**
-     * ·µ»ØÓÃÓÚ¶ÁÈ¡µÄËø¡£
+     * è¿”å›ç”¨äºè¯»å–çš„é”ã€‚
      *
      * @return the lock used for reading
      */
     Lock readLock();
 
     /**
-     * ·µ»ØÓÃÓÚĞ´ÈëµÄËø¡£
+     * è¿”å›ç”¨äºå†™å…¥çš„é”ã€‚
      *
      * @return the lock used for writing
      */

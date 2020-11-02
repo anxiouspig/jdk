@@ -37,14 +37,14 @@ package java.util.concurrent;
 import java.util.concurrent.locks.LockSupport;
 
 /**
- * ¿ÉÈ¡ÏûµÄÒì²½¼ÆËã¡£Õâ¸öÀàÌá¹©ÁËÒ»¸öFutureµÄ»ù±¾ÊµÏÖ£¬Ê¹ÓÃÒ»Ğ©·½·¨À´Æô¶¯ºÍÈ¡Ïû¼ÆËã¡¢
- * ²éÑ¯ÒÔ²é¿´¼ÆËãÊÇ·ñÍê³ÉÒÔ¼°¼ìË÷¼ÆËã½á¹û¡£Ö»ÓĞÔÚ¼ÆËãÍê³Éºó£¬²Å¿É¼ìË÷½á¹û;Èç¹û¼ÆËãÉĞÎ´Íê³É£¬get·½·¨½«×èÈû¡£
- * Ò»µ©¼ÆËãÍê³É£¬¾Í²»ÄÜÖØĞÂÆô¶¯»òÈ¡Ïû¼ÆËã(³ı·ÇÊ¹ÓÃrunAndReset()µ÷ÓÃ¼ÆËã)¡£
+ * å¯å–æ¶ˆçš„å¼‚æ­¥è®¡ç®—ã€‚è¿™ä¸ªç±»æä¾›äº†ä¸€ä¸ªFutureçš„åŸºæœ¬å®ç°ï¼Œä½¿ç”¨ä¸€äº›æ–¹æ³•æ¥å¯åŠ¨å’Œå–æ¶ˆè®¡ç®—ã€
+ * æŸ¥è¯¢ä»¥æŸ¥çœ‹è®¡ç®—æ˜¯å¦å®Œæˆä»¥åŠæ£€ç´¢è®¡ç®—ç»“æœã€‚åªæœ‰åœ¨è®¡ç®—å®Œæˆåï¼Œæ‰å¯æ£€ç´¢ç»“æœ;å¦‚æœè®¡ç®—å°šæœªå®Œæˆï¼Œgetæ–¹æ³•å°†é˜»å¡ã€‚
+ * ä¸€æ—¦è®¡ç®—å®Œæˆï¼Œå°±ä¸èƒ½é‡æ–°å¯åŠ¨æˆ–å–æ¶ˆè®¡ç®—(é™¤éä½¿ç”¨runAndReset()è°ƒç”¨è®¡ç®—)ã€‚
  *
- * <p>FutureTask¿ÉÒÔÓÃÀ´°ü×°Ò»¸ö¿Éµ÷ÓÃ»ò¿ÉÔËĞĞµÄ¶ÔÏó¡£ÒòÎªFutureTaskÊµÏÖÁËRunnable£¬
- * ËùÒÔ¿ÉÒÔ½«FutureTaskÌá½»¸øÖ´ĞĞ³ÌĞòÖ´ĞĞ
+ * <p>FutureTaskå¯ä»¥ç”¨æ¥åŒ…è£…ä¸€ä¸ªå¯è°ƒç”¨æˆ–å¯è¿è¡Œçš„å¯¹è±¡ã€‚å› ä¸ºFutureTaskå®ç°äº†Runnableï¼Œ
+ * æ‰€ä»¥å¯ä»¥å°†FutureTaskæäº¤ç»™æ‰§è¡Œç¨‹åºæ‰§è¡Œ
  *
- * <p>³ıÁË×÷ÎªÒ»¸ö¶ÀÁ¢µÄÀàÖ®Íâ£¬Õâ¸öÀà»¹Ìá¹©ÁËÔÚ´´½¨×Ô¶¨ÒåÈÎÎñÀàÊ±¿ÉÄÜÓĞÓÃµÄÊÜ±£»¤¹¦ÄÜ¡£
+ * <p>é™¤äº†ä½œä¸ºä¸€ä¸ªç‹¬ç«‹çš„ç±»ä¹‹å¤–ï¼Œè¿™ä¸ªç±»è¿˜æä¾›äº†åœ¨åˆ›å»ºè‡ªå®šä¹‰ä»»åŠ¡ç±»æ—¶å¯èƒ½æœ‰ç”¨çš„å—ä¿æŠ¤åŠŸèƒ½ã€‚
  *
  * @since 1.5
  * @author Doug Lea
@@ -52,15 +52,15 @@ import java.util.concurrent.locks.LockSupport;
  */
 public class FutureTask<V> implements RunnableFuture<V> {
     /*
-     * ĞŞ¶©ËµÃ÷:ÕâÓëÕâ¸öÀàÒÔÇ°µÄ°æ±¾²»Í¬£¬ÒÔÇ°µÄ°æ±¾ÒÀÀµÓÚAbstractQueuedSynchronizer£¬Ö÷ÒªÊÇÎªÁË±ÜÃâÔÚÈ¡Ïû¾ºÕùÆÚ¼ä±£³ÖÖĞ¶Ï×´Ì¬¸øÓÃ»§´øÀ´ÒâÍâ¡£µ±Ç°Éè¼ÆÖĞµÄÍ¬²½¿ØÖÆÒÀÀµÓÚÍ¨¹ıCAS¸üĞÂµÄ¡°state¡±×Ö¶ÎÀ´¸ú×ÙÍê³ÉÇé¿ö£¬ÒÔ¼°Ò»¸ö¼òµ¥µÄTreiber¶ÑÕ»À´±£´æµÈ´ıµÄÏß³Ì¡£
+     * ä¿®è®¢è¯´æ˜:è¿™ä¸è¿™ä¸ªç±»ä»¥å‰çš„ç‰ˆæœ¬ä¸åŒï¼Œä»¥å‰çš„ç‰ˆæœ¬ä¾èµ–äºAbstractQueuedSynchronizerï¼Œä¸»è¦æ˜¯ä¸ºäº†é¿å…åœ¨å–æ¶ˆç«äº‰æœŸé—´ä¿æŒä¸­æ–­çŠ¶æ€ç»™ç”¨æˆ·å¸¦æ¥æ„å¤–ã€‚å½“å‰è®¾è®¡ä¸­çš„åŒæ­¥æ§åˆ¶ä¾èµ–äºé€šè¿‡CASæ›´æ–°çš„â€œstateâ€å­—æ®µæ¥è·Ÿè¸ªå®Œæˆæƒ…å†µï¼Œä»¥åŠä¸€ä¸ªç®€å•çš„Treiberå †æ ˆæ¥ä¿å­˜ç­‰å¾…çš„çº¿ç¨‹ã€‚
      *
-     * Style note: ÓëÍù³£Ò»Ñù£¬ÎÒÃÇÈÆ¹ıÁËÊ¹ÓÃAtomicXFieldUpdatersµÄ¿ªÏú£¬¶øÊÇÖ±½ÓÊ¹ÓÃ²»°²È«µÄÄÚ²¿ÌØĞÔ¡£
+     * Style note: ä¸å¾€å¸¸ä¸€æ ·ï¼Œæˆ‘ä»¬ç»•è¿‡äº†ä½¿ç”¨AtomicXFieldUpdatersçš„å¼€é”€ï¼Œè€Œæ˜¯ç›´æ¥ä½¿ç”¨ä¸å®‰å…¨çš„å†…éƒ¨ç‰¹æ€§ã€‚
      */
 
     /**
-     * ´ËÈÎÎñµÄÔËĞĞ×´Ì¬£¬×î³õÊÇĞÂµÄ¡£ÔËĞĞ×´Ì¬½öÔÚset¡¢setExceptionºÍcancel·½·¨ÖĞ×ª»»ÎªÖÕ¶Ë×´Ì¬¡£ÔÚÍê³ÉÆÚ¼ä£¬×´Ì¬¿ÉÒÔ²ÉÓÃÔİÌ¬ÖµÀ´Íê³É(ÔÚÉèÖÃ½á¹ûÊ±)»òÖĞ¶Ï(½öÔÚÖĞ¶ÏÔËĞĞ³ÌĞòÒÔÂú×ãÈ¡Ïû(true)Ê±)¡£´ÓÕâĞ©ÖĞ¼ä×´Ì¬µ½×îÖÕ×´Ì¬µÄ×ª»»Ê¹ÓÃ¸ü±ãÒËµÄÓĞĞò/ÑÓ³ÙĞ´²Ù×÷£¬ÒòÎªÖµÊÇÎ©Ò»µÄ£¬²»ÄÜ½øÒ»²½ĞŞ¸Ä¡£
+     * æ­¤ä»»åŠ¡çš„è¿è¡ŒçŠ¶æ€ï¼Œæœ€åˆæ˜¯æ–°çš„ã€‚è¿è¡ŒçŠ¶æ€ä»…åœ¨setã€setExceptionå’Œcancelæ–¹æ³•ä¸­è½¬æ¢ä¸ºç»ˆç«¯çŠ¶æ€ã€‚åœ¨å®ŒæˆæœŸé—´ï¼ŒçŠ¶æ€å¯ä»¥é‡‡ç”¨æš‚æ€å€¼æ¥å®Œæˆ(åœ¨è®¾ç½®ç»“æœæ—¶)æˆ–ä¸­æ–­(ä»…åœ¨ä¸­æ–­è¿è¡Œç¨‹åºä»¥æ»¡è¶³å–æ¶ˆ(true)æ—¶)ã€‚ä»è¿™äº›ä¸­é—´çŠ¶æ€åˆ°æœ€ç»ˆçŠ¶æ€çš„è½¬æ¢ä½¿ç”¨æ›´ä¾¿å®œçš„æœ‰åº/å»¶è¿Ÿå†™æ“ä½œï¼Œå› ä¸ºå€¼æ˜¯æƒŸä¸€çš„ï¼Œä¸èƒ½è¿›ä¸€æ­¥ä¿®æ”¹ã€‚
      *
-     * ¿ÉÄÜµÄ×´Ì¬×ª»»:
+     * å¯èƒ½çš„çŠ¶æ€è½¬æ¢:
      * NEW -> COMPLETING -> NORMAL
      * NEW -> COMPLETING -> EXCEPTIONAL
      * NEW -> CANCELLED
@@ -75,51 +75,51 @@ public class FutureTask<V> implements RunnableFuture<V> {
     private static final int INTERRUPTING = 5;
     private static final int INTERRUPTED  = 6;
 
-    /** µ×²ãµ÷ÓÃ; ÔËĞĞºóÎª¿Õ */
+    /** åº•å±‚è°ƒç”¨; è¿è¡Œåä¸ºç©º */
     private Callable<V> callable;
-    /** get()·µ»ØµÄ½á¹¹»òÒì³£ */
+    /** get()è¿”å›çš„ç»“æ„æˆ–å¼‚å¸¸ */
     private Object outcome; // non-volatile, protected by state reads/writes
-    /** Ïß³ÌÔËĞĞµÄ½á¹û; ÔËĞĞÊ±cas²Ù×÷ */
+    /** çº¿ç¨‹è¿è¡Œçš„ç»“æœ; è¿è¡Œæ—¶casæ“ä½œ */
     private volatile Thread runner;
     /** Treiber stack of waiting threads */
     private volatile WaitNode waiters;
 
     /**
-     * ·µ»Ø½á¹û»òÅ×³öÍê³ÉÈÎÎñÒì³£¡£
+     * è¿”å›ç»“æœæˆ–æŠ›å‡ºå®Œæˆä»»åŠ¡å¼‚å¸¸ã€‚
      *
-     * @param s Íê³É×´Ì¬Öµ
+     * @param s å®ŒæˆçŠ¶æ€å€¼
      */
     @SuppressWarnings("unchecked")
     private V report(int s) throws ExecutionException {
-        Object x = outcome; // ½á¹û
-        if (s == NORMAL) // Èô×´Ì¬ÎªÕı³££¬Ôò·µ»Ø½á¹û
+        Object x = outcome; // ç»“æœ
+        if (s == NORMAL) // è‹¥çŠ¶æ€ä¸ºæ­£å¸¸ï¼Œåˆ™è¿”å›ç»“æœ
             return (V)x;
-        if (s >= CANCELLED) // ÈôÎªÈ¡Ïû»òÖĞ¶Ï£¬ÔòÅ×³öÒì³£
+        if (s >= CANCELLED) // è‹¥ä¸ºå–æ¶ˆæˆ–ä¸­æ–­ï¼Œåˆ™æŠ›å‡ºå¼‚å¸¸
             throw new CancellationException();
-        throw new ExecutionException((Throwable)x); // ÆäËû×´Ì¬Å×³öÒì³£
+        throw new ExecutionException((Throwable)x); // å…¶ä»–çŠ¶æ€æŠ›å‡ºå¼‚å¸¸
     }
 
     /**
-     * ´´½¨Ò»¸ö {@code FutureTask} that will, ÔÚÔËĞĞ, Ö´ĞĞ¸ø¶¨µÄ {@code Callable}.
+     * åˆ›å»ºä¸€ä¸ª {@code FutureTask} that will, åœ¨è¿è¡Œ, æ‰§è¡Œç»™å®šçš„ {@code Callable}.
      *
-     * @param  callable ¿Éµ÷ÓÃµÄÈÎÎñ
+     * @param  callable å¯è°ƒç”¨çš„ä»»åŠ¡
      * @throws NullPointerException if the callable is null
      */
     public FutureTask(Callable<V> callable) {
-        if (callable == null) // ÈôÈÎÎñÎªnull£¬ÔòÅ×³ö¿ÕÖ¸ÕëÒì³£
+        if (callable == null) // è‹¥ä»»åŠ¡ä¸ºnullï¼Œåˆ™æŠ›å‡ºç©ºæŒ‡é’ˆå¼‚å¸¸
             throw new NullPointerException();
-        this.callable = callable; // ¸³ÖµÈÎÎñ
-        this.state = NEW;       // È·±£µ÷ÓÃµÄ¿É¼ûĞÔ
+        this.callable = callable; // èµ‹å€¼ä»»åŠ¡
+        this.state = NEW;       // ç¡®ä¿è°ƒç”¨çš„å¯è§æ€§
     }
 
     /**
-     * ´´½¨Ò»¸ö {@code FutureTask} that will, ÔÚÔËĞĞÊ±, Ö´ĞĞ
-     * ¸ø¶¨µÄ {@code Runnable}, °²ÅÅ that {@code get} È¥·µ»Ø
-     * ³É¹¦Íê³É¸ø¶¨µÄ½á¹û¡£
+     * åˆ›å»ºä¸€ä¸ª {@code FutureTask} that will, åœ¨è¿è¡Œæ—¶, æ‰§è¡Œ
+     * ç»™å®šçš„ {@code Runnable}, å®‰æ’ that {@code get} å»è¿”å›
+     * æˆåŠŸå®Œæˆç»™å®šçš„ç»“æœã€‚
      *
-     * @param runnable ÔËĞĞÈÎÎñ
-     * @param result ³É¹¦Íê³É·µ»ØµÄ½á¹û
-     * Èç¹û²»ĞèÒªÌØ¶¨µÄ½á¹û, ¿¼ÂÇÈçÏÂ¹¹Ôìº¯Êı
+     * @param runnable è¿è¡Œä»»åŠ¡
+     * @param result æˆåŠŸå®Œæˆè¿”å›çš„ç»“æœ
+     * å¦‚æœä¸éœ€è¦ç‰¹å®šçš„ç»“æœ, è€ƒè™‘å¦‚ä¸‹æ„é€ å‡½æ•°
      * {@code Future<?> f = new FutureTask<Void>(runnable, null)}
      * @throws NullPointerException if the runnable is null
      */
@@ -127,29 +127,29 @@ public class FutureTask<V> implements RunnableFuture<V> {
         this.callable = Executors.callable(runnable, result); //
         this.state = NEW;       // ensure visibility of callable
     }
-    // Èç¹û´ËÈÎÎñÔÚÕı³£Íê³ÉÖ®Ç°±»È¡Ïû£¬Ôò·µ»Øtrue¡£
+    // å¦‚æœæ­¤ä»»åŠ¡åœ¨æ­£å¸¸å®Œæˆä¹‹å‰è¢«å–æ¶ˆï¼Œåˆ™è¿”å›trueã€‚
     public boolean isCancelled() {
         return state >= CANCELLED;
     }
-    // Èç¹û´ËÈÎÎñÒÑÍê³É£¬Ôò·µ»Øtrue¡£Íê³É¿ÉÄÜÊÇÓÉÓÚÕı³£µÄÖÕÖ¹¡¢Òì³£»òÈ¡Ïû¡ª¡ªÔÚËùÓĞÕâĞ©Çé¿öÏÂ£¬´Ë·½·¨¶¼½«·µ»Øtrue¡£
+    // å¦‚æœæ­¤ä»»åŠ¡å·²å®Œæˆï¼Œåˆ™è¿”å›trueã€‚å®Œæˆå¯èƒ½æ˜¯ç”±äºæ­£å¸¸çš„ç»ˆæ­¢ã€å¼‚å¸¸æˆ–å–æ¶ˆâ€”â€”åœ¨æ‰€æœ‰è¿™äº›æƒ…å†µä¸‹ï¼Œæ­¤æ–¹æ³•éƒ½å°†è¿”å›trueã€‚
     public boolean isDone() {
         return state != NEW;
     }
 
-    // ÊÔÍ¼È¡Ïû´ËÈÎÎñµÄÖ´ĞĞ¡£Èç¹ûÈÎÎñÒÑ¾­Íê³É£¬ÒÑ¾­È¡Ïû£¬»òÕßÓÉÓÚÆäËûÔ­ÒòÎŞ·¨È¡Ïû£¬Ôò´Ë³¢ÊÔ½«Ê§°Ü¡£Èç¹û³É¹¦£¬²¢ÇÒÔÚµ÷ÓÃcancelÊ±´ËÈÎÎñÉĞÎ´Æô¶¯£¬Ôò´ËÈÎÎñ²»Ó¦ÔËĞĞ¡£Èç¹ûÈÎÎñÒÑ¾­Æô¶¯£¬ÄÇÃ´mayInterruptIfRunning²ÎÊıÈ·¶¨Ö´ĞĞ´ËÈÎÎñµÄÏß³ÌÊÇ·ñÓ¦¸ÃÖĞ¶Ï£¬ÒÔÊÔÍ¼Í£Ö¹¸ÃÈÎÎñ¡£
-    // ÔÚ´Ë·½·¨·µ»Øºó£¬¶ÔFuture.isDone()µÄºóĞøµ÷ÓÃ½«Ê¼ÖÕ·µ»Øtrue¡£Èç¹û¸Ã·½·¨·µ»Øtrue£¬ÄÇÃ´¶Ôfuture.iscancel()µÄºóĞøµ÷ÓÃ½«Ê¼ÖÕ·µ»Øtrue¡£
+    // è¯•å›¾å–æ¶ˆæ­¤ä»»åŠ¡çš„æ‰§è¡Œã€‚å¦‚æœä»»åŠ¡å·²ç»å®Œæˆï¼Œå·²ç»å–æ¶ˆï¼Œæˆ–è€…ç”±äºå…¶ä»–åŸå› æ— æ³•å–æ¶ˆï¼Œåˆ™æ­¤å°è¯•å°†å¤±è´¥ã€‚å¦‚æœæˆåŠŸï¼Œå¹¶ä¸”åœ¨è°ƒç”¨cancelæ—¶æ­¤ä»»åŠ¡å°šæœªå¯åŠ¨ï¼Œåˆ™æ­¤ä»»åŠ¡ä¸åº”è¿è¡Œã€‚å¦‚æœä»»åŠ¡å·²ç»å¯åŠ¨ï¼Œé‚£ä¹ˆmayInterruptIfRunningå‚æ•°ç¡®å®šæ‰§è¡Œæ­¤ä»»åŠ¡çš„çº¿ç¨‹æ˜¯å¦åº”è¯¥ä¸­æ–­ï¼Œä»¥è¯•å›¾åœæ­¢è¯¥ä»»åŠ¡ã€‚
+    // åœ¨æ­¤æ–¹æ³•è¿”å›åï¼Œå¯¹Future.isDone()çš„åç»­è°ƒç”¨å°†å§‹ç»ˆè¿”å›trueã€‚å¦‚æœè¯¥æ–¹æ³•è¿”å›trueï¼Œé‚£ä¹ˆå¯¹future.iscancel()çš„åç»­è°ƒç”¨å°†å§‹ç»ˆè¿”å›trueã€‚
     public boolean cancel(boolean mayInterruptIfRunning) {
-        if (!(state == NEW && // Èç¹ûÏß³ÌÎª¸Õ´´½¨µÄ
+        if (!(state == NEW && // å¦‚æœçº¿ç¨‹ä¸ºåˆšåˆ›å»ºçš„
               UNSAFE.compareAndSwapInt(this, stateOffset, NEW,
-                  mayInterruptIfRunning ? INTERRUPTING : CANCELLED))) // ÉèÖÃÏß³Ì×´Ì¬ÎªÖĞ¶Ï»òÈ¡Ïû
-            return false; // ÉèÖÃ²»³É¹¦£¬·µ»Øfalse
-        try {    // ÒÔ·Àµ÷ÓÃ´ò¶ÏÅ×Òì³£
-            if (mayInterruptIfRunning) { // Îªtrue£¬ÖĞ¶ÏÕıÔÚÔËĞĞµÄÏß³Ì
+                  mayInterruptIfRunning ? INTERRUPTING : CANCELLED))) // è®¾ç½®çº¿ç¨‹çŠ¶æ€ä¸ºä¸­æ–­æˆ–å–æ¶ˆ
+            return false; // è®¾ç½®ä¸æˆåŠŸï¼Œè¿”å›false
+        try {    // ä»¥é˜²è°ƒç”¨æ‰“æ–­æŠ›å¼‚å¸¸
+            if (mayInterruptIfRunning) { // ä¸ºtrueï¼Œä¸­æ–­æ­£åœ¨è¿è¡Œçš„çº¿ç¨‹
                 try {
-                    Thread t = runner; // ÕıÔÚÔËĞĞµÄÏß³Ì
-                    if (t != null) // Èô²»Îªnull£¬ÔòÖĞ¶Ï
+                    Thread t = runner; // æ­£åœ¨è¿è¡Œçš„çº¿ç¨‹
+                    if (t != null) // è‹¥ä¸ä¸ºnullï¼Œåˆ™ä¸­æ–­
                         t.interrupt();
-                } finally { // ×´Ì¬ÉèÖÃÎªÖĞ¶Ï
+                } finally { // çŠ¶æ€è®¾ç½®ä¸ºä¸­æ–­
                     UNSAFE.putOrderedInt(this, stateOffset, INTERRUPTED);
                 }
             }
@@ -160,18 +160,18 @@ public class FutureTask<V> implements RunnableFuture<V> {
     }
 
     /**
-     * Èç¹ûĞèÒª£¬ÔòµÈ´ı¼ÆËãÍê³É£¬È»ºó¼ìË÷Æä½á¹û¡£
+     * å¦‚æœéœ€è¦ï¼Œåˆ™ç­‰å¾…è®¡ç®—å®Œæˆï¼Œç„¶åæ£€ç´¢å…¶ç»“æœã€‚
      * @throws CancellationException {@inheritDoc}
      */
     public V get() throws InterruptedException, ExecutionException {
-        int s = state; // ×´Ì¬
+        int s = state; // çŠ¶æ€
         if (s <= COMPLETING)
-            s = awaitDone(false, 0L); // ×ÔĞıµÈ´ıÈÎÎñÍê³É
+            s = awaitDone(false, 0L); // è‡ªæ—‹ç­‰å¾…ä»»åŠ¡å®Œæˆ
         return report(s);
     }
 
     /**
-     * Èç¹ûĞèÒª£¬½«µÈ´ı×î¶à¸ø¶¨µÄÊ±¼äÒÔÍê³É¼ÆËã£¬È»ºó¼ìË÷Æä½á¹û(Èç¹û¿ÉÓÃ)¡£
+     * å¦‚æœéœ€è¦ï¼Œå°†ç­‰å¾…æœ€å¤šç»™å®šçš„æ—¶é—´ä»¥å®Œæˆè®¡ç®—ï¼Œç„¶åæ£€ç´¢å…¶ç»“æœ(å¦‚æœå¯ç”¨)ã€‚
      * @throws CancellationException {@inheritDoc}
      */
     public V get(long timeout, TimeUnit unit)
@@ -180,28 +180,28 @@ public class FutureTask<V> implements RunnableFuture<V> {
             throw new NullPointerException();
         int s = state;
         if (s <= COMPLETING &&
-            (s = awaitDone(true, unit.toNanos(timeout))) <= COMPLETING) //  ×ÔĞıµÈ´ıÈÎÎñÍê³É
+            (s = awaitDone(true, unit.toNanos(timeout))) <= COMPLETING) //  è‡ªæ—‹ç­‰å¾…ä»»åŠ¡å®Œæˆ
             throw new TimeoutException();
         return report(s);
     }
 
     /**
-     * ÔÚ´ËÈÎÎñ×ª»»µ½×´Ì¬isDoneÊ±µ÷ÓÃÊÜ±£»¤µÄ·½·¨(ÎŞÂÛÊÇÕı³£Çé¿öÏÂ»¹ÊÇÍ¨¹ıÈ¡Ïû)¡£Ä¬ÈÏÊµÏÖÊ²Ã´Ò²²»×ö¡£×ÓÀà¿ÉÒÔ¸²¸Ç´Ë·½·¨À´µ÷ÓÃÍê³É»Øµ÷»òÖ´ĞĞ²¾¼Ç¡£
-     * Çë×¢Òâ£¬Äú¿ÉÒÔ²éÑ¯´Ë·½·¨ÊµÏÖÖĞµÄ×´Ì¬£¬ÒÔÈ·¶¨´ËÈÎÎñÊÇ·ñÒÑ±»È¡Ïû¡£
+     * åœ¨æ­¤ä»»åŠ¡è½¬æ¢åˆ°çŠ¶æ€isDoneæ—¶è°ƒç”¨å—ä¿æŠ¤çš„æ–¹æ³•(æ— è®ºæ˜¯æ­£å¸¸æƒ…å†µä¸‹è¿˜æ˜¯é€šè¿‡å–æ¶ˆ)ã€‚é»˜è®¤å®ç°ä»€ä¹ˆä¹Ÿä¸åšã€‚å­ç±»å¯ä»¥è¦†ç›–æ­¤æ–¹æ³•æ¥è°ƒç”¨å®Œæˆå›è°ƒæˆ–æ‰§è¡Œç°¿è®°ã€‚
+     * è¯·æ³¨æ„ï¼Œæ‚¨å¯ä»¥æŸ¥è¯¢æ­¤æ–¹æ³•å®ç°ä¸­çš„çŠ¶æ€ï¼Œä»¥ç¡®å®šæ­¤ä»»åŠ¡æ˜¯å¦å·²è¢«å–æ¶ˆã€‚
      */
     protected void done() { }
 
     /**
-     * ½«´ËfutureµÄ½á¹ûÉèÖÃÎª¸ø¶¨Öµ£¬³ı·Ç´ËfutureÒÑ±»ÉèÖÃ»òÒÑ±»È¡Ïû¡£
+     * å°†æ­¤futureçš„ç»“æœè®¾ç½®ä¸ºç»™å®šå€¼ï¼Œé™¤éæ­¤futureå·²è¢«è®¾ç½®æˆ–å·²è¢«å–æ¶ˆã€‚
      *
-     * <p>´Ë·½·¨ÔÚ³É¹¦Íê³É¼ÆËãºóÓÉrun()·½·¨ÔÚÄÚ²¿µ÷ÓÃ¡£
+     * <p>æ­¤æ–¹æ³•åœ¨æˆåŠŸå®Œæˆè®¡ç®—åç”±run()æ–¹æ³•åœ¨å†…éƒ¨è°ƒç”¨ã€‚
      *
      * @param v the value
      */
-    protected void set(V v) { // ÉèÖÃ½á¹û
-        if (UNSAFE.compareAndSwapInt(this, stateOffset, NEW, COMPLETING)) { // ×´Ì¬ÉèÎªÕıÔÚÍê³É
-            outcome = v; // ¸³Öµ½á¹û
-            UNSAFE.putOrderedInt(this, stateOffset, NORMAL); // final state ×´Ì¬ÉèÎªÕı³£Íê³É
+    protected void set(V v) { // è®¾ç½®ç»“æœ
+        if (UNSAFE.compareAndSwapInt(this, stateOffset, NEW, COMPLETING)) { // çŠ¶æ€è®¾ä¸ºæ­£åœ¨å®Œæˆ
+            outcome = v; // èµ‹å€¼ç»“æœ
+            UNSAFE.putOrderedInt(this, stateOffset, NORMAL); // final state çŠ¶æ€è®¾ä¸ºæ­£å¸¸å®Œæˆ
             finishCompletion();
         }
     }
@@ -216,43 +216,43 @@ public class FutureTask<V> implements RunnableFuture<V> {
      *
      * @param t the cause of failure
      */
-    protected void setException(Throwable t) { // ÉèÖÃÒì³£ĞÅÏ¢
-        if (UNSAFE.compareAndSwapInt(this, stateOffset, NEW, COMPLETING)) { // ×´Ì¬ÉèÎªÕıÔÚÍê³É
-            outcome = t; // ½á¹ûÎªÒì³£ĞÅÏ¢
-            UNSAFE.putOrderedInt(this, stateOffset, EXCEPTIONAL); // final state ×´Ì¬ÉèÎªÒì³£×´Ì¬
+    protected void setException(Throwable t) { // è®¾ç½®å¼‚å¸¸ä¿¡æ¯
+        if (UNSAFE.compareAndSwapInt(this, stateOffset, NEW, COMPLETING)) { // çŠ¶æ€è®¾ä¸ºæ­£åœ¨å®Œæˆ
+            outcome = t; // ç»“æœä¸ºå¼‚å¸¸ä¿¡æ¯
+            UNSAFE.putOrderedInt(this, stateOffset, EXCEPTIONAL); // final state çŠ¶æ€è®¾ä¸ºå¼‚å¸¸çŠ¶æ€
             finishCompletion();
         }
     }
 
     public void run() {
-        if (state != NEW || // ´Ë·½·¨ÒªÇó×´Ì¬±ØĞëÊÇnew
+        if (state != NEW || // æ­¤æ–¹æ³•è¦æ±‚çŠ¶æ€å¿…é¡»æ˜¯new
             !UNSAFE.compareAndSwapObject(this, runnerOffset,
-                                         null, Thread.currentThread())) // °ÑÔËĞĞÏß³Ì»»Îªµ±Ç°Ïß³Ì
-            return; // ²»Âú×ãÔËĞĞÌõ¼ş£¬·µ»Ø£»
+                                         null, Thread.currentThread())) // æŠŠè¿è¡Œçº¿ç¨‹æ¢ä¸ºå½“å‰çº¿ç¨‹
+            return; // ä¸æ»¡è¶³è¿è¡Œæ¡ä»¶ï¼Œè¿”å›ï¼›
         try {
-            Callable<V> c = callable; // »Øµ÷º¯Êı
-            if (c != null && state == NEW) { // ÅĞ¶Ïº¯Êı²»Îªnull²¢ÇÒ×´Ì¬Îªnew
-                V result; // ½á¹û
-                boolean ran; // ÊÇ·ñ³É¹¦
+            Callable<V> c = callable; // å›è°ƒå‡½æ•°
+            if (c != null && state == NEW) { // åˆ¤æ–­å‡½æ•°ä¸ä¸ºnullå¹¶ä¸”çŠ¶æ€ä¸ºnew
+                V result; // ç»“æœ
+                boolean ran; // æ˜¯å¦æˆåŠŸ
                 try {
-                    result = c.call();  // ·µ»ØµÄ½á¹û£¬ÕâÒ»²½ºÄÊ±¿´ÈÎÎñÖ´ĞĞÊ±¼ä
-                    ran = true; // ÈÎÎñÖ´ĞĞ³É¹¦
+                    result = c.call();  // è¿”å›çš„ç»“æœï¼Œè¿™ä¸€æ­¥è€—æ—¶çœ‹ä»»åŠ¡æ‰§è¡Œæ—¶é—´
+                    ran = true; // ä»»åŠ¡æ‰§è¡ŒæˆåŠŸ
                 } catch (Throwable ex) {
-                    result = null; // ½á¹ûÎªnull
-                    ran = false; // ÔËĞĞÊ§°Ü
-                    setException(ex); // ³öÏÖÒì³££¬ÉèÖÃÒì³£ĞÅÏ¢
+                    result = null; // ç»“æœä¸ºnull
+                    ran = false; // è¿è¡Œå¤±è´¥
+                    setException(ex); // å‡ºç°å¼‚å¸¸ï¼Œè®¾ç½®å¼‚å¸¸ä¿¡æ¯
                 }
                 if (ran)
-                    set(result); // ÉèÖÃ½á¹û
+                    set(result); // è®¾ç½®ç»“æœ
             }
         } finally {
-            // runner ±ØĞë·Çnull£¬until state is settled to
+            // runner å¿…é¡»énullï¼Œuntil state is settled to
             // prevent concurrent calls to run()
-            runner = null; // Ö´ĞĞ½áÊø£¬Ö´ĞĞÏß³ÌÉèÎªnull
+            runner = null; // æ‰§è¡Œç»“æŸï¼Œæ‰§è¡Œçº¿ç¨‹è®¾ä¸ºnull
             // state must be re-read after nulling runner to prevent
             // leaked interrupts
             int s = state;
-            if (s >= INTERRUPTING) // ÈÎÎñÈç¹ûÖĞ¶Ï
+            if (s >= INTERRUPTING) // ä»»åŠ¡å¦‚æœä¸­æ–­
                 handlePossibleCancellationInterrupt(s);
         }
     }
@@ -267,20 +267,20 @@ public class FutureTask<V> implements RunnableFuture<V> {
      * @return {@code true} if successfully run and reset
      */
     protected boolean runAndReset() {
-        if (state != NEW || // ×´Ì¬±ØĞëÎªnew
+        if (state != NEW || // çŠ¶æ€å¿…é¡»ä¸ºnew
             !UNSAFE.compareAndSwapObject(this, runnerOffset,
-                                         null, Thread.currentThread())) // ÉèÖÃÔËĞĞÏß³ÌÎªµ±Ç°Ïß³Ì
+                                         null, Thread.currentThread())) // è®¾ç½®è¿è¡Œçº¿ç¨‹ä¸ºå½“å‰çº¿ç¨‹
             return false;
         boolean ran = false;
         int s = state;
         try {
-            Callable<V> c = callable; // »Øµ÷º¯Êı
-            if (c != null && s == NEW) { // º¯Êı²»Îªnull£¬×´Ì¬Îªnew
+            Callable<V> c = callable; // å›è°ƒå‡½æ•°
+            if (c != null && s == NEW) { // å‡½æ•°ä¸ä¸ºnullï¼ŒçŠ¶æ€ä¸ºnew
                 try {
-                    c.call(); // ²»ÉèÖÃ½á¹û
+                    c.call(); // ä¸è®¾ç½®ç»“æœ
                     ran = true;
                 } catch (Throwable ex) {
-                    setException(ex); // ÉèÖÃÒì³£ĞÅÏ¢
+                    setException(ex); // è®¾ç½®å¼‚å¸¸ä¿¡æ¯
                 }
             }
         } finally {
@@ -290,7 +290,7 @@ public class FutureTask<V> implements RunnableFuture<V> {
             // state must be re-read after nulling runner to prevent
             // leaked interrupts
             s = state;
-            if (s >= INTERRUPTING) // ÈôÎªÖĞ¶Ï×´Ì¬
+            if (s >= INTERRUPTING) // è‹¥ä¸ºä¸­æ–­çŠ¶æ€
                 handlePossibleCancellationInterrupt(s);
         }
         return ran && s == NEW;
@@ -301,17 +301,17 @@ public class FutureTask<V> implements RunnableFuture<V> {
      * delivered to a task while in run or runAndReset.
      */
     private void handlePossibleCancellationInterrupt(int s) {
-        // ÔÚÓĞ»ú»á´ò¶ÏÎÒÃÇÖ®Ç°£¬ÎÒÃÇµÄÖĞ¶ÏÆ÷¿ÉÄÜ»áÍ£Ö¹¡£ÈÃÎÒÃÇÄÍĞÄµØÑ­»·µÈ´ı¡£
-        if (s == INTERRUPTING) // ÈôÎªÖĞ¶Ï×´Ì¬
-            while (state == INTERRUPTING) // Ñ­»·£¬Ö»ÒªÖĞ¶Ï×´Ì¬¾ÍÈÃ³öcpu
-                Thread.yield(); // µÈ´ıÖĞ¶Ï
+        // åœ¨æœ‰æœºä¼šæ‰“æ–­æˆ‘ä»¬ä¹‹å‰ï¼Œæˆ‘ä»¬çš„ä¸­æ–­å™¨å¯èƒ½ä¼šåœæ­¢ã€‚è®©æˆ‘ä»¬è€å¿ƒåœ°å¾ªç¯ç­‰å¾…ã€‚
+        if (s == INTERRUPTING) // è‹¥ä¸ºä¸­æ–­çŠ¶æ€
+            while (state == INTERRUPTING) // å¾ªç¯ï¼Œåªè¦ä¸­æ–­çŠ¶æ€å°±è®©å‡ºcpu
+                Thread.yield(); // ç­‰å¾…ä¸­æ–­
 
-        // ¶ÏÑÔ state == INTERRUPTED;
+        // æ–­è¨€ state == INTERRUPTED;
 
-        // ÎÒÃÇÏëÒªÈ·ÈÏÎÒÃÇÊÕµ½µÄÈÎºÎÖĞ¶Ïcancel(true).
-        //   È»¶ø, ÔÊĞíÊ¹ÓÃÖĞ¶Ï
-        // ×÷ÎªÒ»¸ö¶ÀÁ¢µÄ»úÖÆ ¶ÔÓÚ¹µÍ¨µ÷ÓÃÕßµÄÈÎÎñ
-        // and Ã»°ì·¨Ö»Çå³ıÈ¡ÏûÖĞ¶Ï
+        // æˆ‘ä»¬æƒ³è¦ç¡®è®¤æˆ‘ä»¬æ”¶åˆ°çš„ä»»ä½•ä¸­æ–­cancel(true).
+        //   ç„¶è€Œ, å…è®¸ä½¿ç”¨ä¸­æ–­
+        // ä½œä¸ºä¸€ä¸ªç‹¬ç«‹çš„æœºåˆ¶ å¯¹äºæ²Ÿé€šè°ƒç”¨è€…çš„ä»»åŠ¡
+        // and æ²¡åŠæ³•åªæ¸…é™¤å–æ¶ˆä¸­æ–­
         //
         // Thread.interrupted();
 
@@ -323,9 +323,9 @@ public class FutureTask<V> implements RunnableFuture<V> {
      * for more detailed explanation.
      */
     static final class WaitNode {
-        volatile Thread thread; // µÈ´ıÏß³Ì
-        volatile WaitNode next; // ÏÂÒ»¸öµÈ´ıÏß³Ì
-        WaitNode() { thread = Thread.currentThread(); } // µ±Ç°Ïß³Ì×÷ÎªµÈ´ıÏß³Ì
+        volatile Thread thread; // ç­‰å¾…çº¿ç¨‹
+        volatile WaitNode next; // ä¸‹ä¸€ä¸ªç­‰å¾…çº¿ç¨‹
+        WaitNode() { thread = Thread.currentThread(); } // å½“å‰çº¿ç¨‹ä½œä¸ºç­‰å¾…çº¿ç¨‹
     }
 
     /**
@@ -333,16 +333,16 @@ public class FutureTask<V> implements RunnableFuture<V> {
      * nulls out callable.
      */
     private void finishCompletion() {
-        // assert state > COMPLETING; // ×´Ì¬ÒÑÍê³É
-        for (WaitNode q; (q = waiters) != null;) { // µÈ´ıÏß³Ì²»Îªnull
-            if (UNSAFE.compareAndSwapObject(this, waitersOffset, q, null)) { // µÈ´ıÏß³ÌÉèÎªnull
-                for (;;) { // ×ÔĞıÊÍ·ÅµÈ´ıÏß³Ì
-                    Thread t = q.thread; // µÈ´ıÏß³Ì
-                    if (t != null) { // Ïß³Ì²»Îªnull
+        // assert state > COMPLETING; // çŠ¶æ€å·²å®Œæˆ
+        for (WaitNode q; (q = waiters) != null;) { // ç­‰å¾…çº¿ç¨‹ä¸ä¸ºnull
+            if (UNSAFE.compareAndSwapObject(this, waitersOffset, q, null)) { // ç­‰å¾…çº¿ç¨‹è®¾ä¸ºnull
+                for (;;) { // è‡ªæ—‹é‡Šæ”¾ç­‰å¾…çº¿ç¨‹
+                    Thread t = q.thread; // ç­‰å¾…çº¿ç¨‹
+                    if (t != null) { // çº¿ç¨‹ä¸ä¸ºnull
                         q.thread = null; // GC
-                        LockSupport.unpark(t); // ÊÍ·ÅµÈ´ıÏß³Ì
+                        LockSupport.unpark(t); // é‡Šæ”¾ç­‰å¾…çº¿ç¨‹
                     }
-                    WaitNode next = q.next; // ÏÂÒ»¸öµÈ´ıÏß³Ì
+                    WaitNode next = q.next; // ä¸‹ä¸€ä¸ªç­‰å¾…çº¿ç¨‹
                     if (next == null)
                         break;
                     q.next = null; // unlink to help gc
@@ -369,35 +369,35 @@ public class FutureTask<V> implements RunnableFuture<V> {
         final long deadline = timed ? System.nanoTime() + nanos : 0L;
         WaitNode q = null;
         boolean queued = false;
-        for (;;) { // ×ÔĞıµÈ´ıÈÎÎñÍê³É
-            if (Thread.interrupted()) { // ÈôÏß³ÌÖĞ¶Ï
-                removeWaiter(q); // ÒÆ³ıµÈ´ıÏß³Ì
+        for (;;) { // è‡ªæ—‹ç­‰å¾…ä»»åŠ¡å®Œæˆ
+            if (Thread.interrupted()) { // è‹¥çº¿ç¨‹ä¸­æ–­
+                removeWaiter(q); // ç§»é™¤ç­‰å¾…çº¿ç¨‹
                 throw new InterruptedException();
             }
 
-            int s = state; // ×´Ì¬
-            if (s > COMPLETING) { // ÒÑÍê³É
+            int s = state; // çŠ¶æ€
+            if (s > COMPLETING) { // å·²å®Œæˆ
                 if (q != null)
                     q.thread = null;
-                return s; // ·µ»Ø×´Ì¬
+                return s; // è¿”å›çŠ¶æ€
             }
             else if (s == COMPLETING) // cannot time out yet
-                Thread.yield(); // Î´Íê³ÉÔòÈÃ³öcpu
+                Thread.yield(); // æœªå®Œæˆåˆ™è®©å‡ºcpu
             else if (q == null)
                 q = new WaitNode();
             else if (!queued)
                 queued = UNSAFE.compareAndSwapObject(this, waitersOffset,
-                        q.next = waiters, q); // Ìæ»»µÈ´ıÏß³Ì
-            else if (timed) { // ³¬Ê±
+                        q.next = waiters, q); // æ›¿æ¢ç­‰å¾…çº¿ç¨‹
+            else if (timed) { // è¶…æ—¶
                 nanos = deadline - System.nanoTime();
                 if (nanos <= 0L) {
-                    removeWaiter(q); // ÒÆ³ıµÈ´ıÏß³Ì
+                    removeWaiter(q); // ç§»é™¤ç­‰å¾…çº¿ç¨‹
                     return state;
                 }
                 LockSupport.parkNanos(this, nanos);
             }
             else
-                LockSupport.park(this); // ×èÈûµ±Ç°Ïß³Ì
+                LockSupport.park(this); // é˜»å¡å½“å‰çº¿ç¨‹
         }
     }
 
@@ -415,7 +415,7 @@ public class FutureTask<V> implements RunnableFuture<V> {
         if (node != null) {
             node.thread = null;
             retry:
-            for (;;) {          // ×ÔĞıÕÒµ½¸Ã½Úµã£¬ÒÆ³ı
+            for (;;) {          // è‡ªæ—‹æ‰¾åˆ°è¯¥èŠ‚ç‚¹ï¼Œç§»é™¤
                 for (WaitNode pred = null, q = waiters, s; q != null; q = s) {
                     s = q.next;
                     if (q.thread != null)

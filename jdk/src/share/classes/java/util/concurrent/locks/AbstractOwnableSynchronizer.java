@@ -36,9 +36,9 @@
 package java.util.concurrent.locks;
 
 /**
- * Ò»ÖÖÍ¬²½Æ÷£¬¿ÉÒÔÓÉÒ»¸öÏß³Ì¶ÀÕ¼¡£¸ÃÀàÌá¹©ÁË´´½¨ËøºÍÏà¹ØÍ¬²½Æ÷µÄ»ù´¡£¬
- * ÕâĞ©Í¬²½Æ÷¿ÉÄÜ°üº¬ËùÓĞÈ¨µÄ¸ÅÄî¡£AbstractOwnableSynchronizerÀà±¾Éí²¢²»¹ÜÀí»òÊ¹ÓÃÕâĞ©ĞÅÏ¢¡£
- * µ«ÊÇ£¬×ÓÀàºÍ¹¤¾ß¿ÉÒÔÊ¹ÓÃÊÊµ±Î¬»¤µÄÖµÀ´°ïÖú¿ØÖÆºÍ¼àÊÓ·ÃÎÊ²¢Ìá¹©Õï¶Ï¡£
+ * ä¸€ç§åŒæ­¥å™¨ï¼Œå¯ä»¥ç”±ä¸€ä¸ªçº¿ç¨‹ç‹¬å ã€‚è¯¥ç±»æä¾›äº†åˆ›å»ºé”å’Œç›¸å…³åŒæ­¥å™¨çš„åŸºç¡€ï¼Œ
+ * è¿™äº›åŒæ­¥å™¨å¯èƒ½åŒ…å«æ‰€æœ‰æƒçš„æ¦‚å¿µã€‚AbstractOwnableSynchronizerç±»æœ¬èº«å¹¶ä¸ç®¡ç†æˆ–ä½¿ç”¨è¿™äº›ä¿¡æ¯ã€‚
+ * ä½†æ˜¯ï¼Œå­ç±»å’Œå·¥å…·å¯ä»¥ä½¿ç”¨é€‚å½“ç»´æŠ¤çš„å€¼æ¥å¸®åŠ©æ§åˆ¶å’Œç›‘è§†è®¿é—®å¹¶æä¾›è¯Šæ–­ã€‚
  *
  * @since 1.6
  * @author Doug Lea
@@ -50,18 +50,18 @@ public abstract class AbstractOwnableSynchronizer
     private static final long serialVersionUID = 3737899427754241961L;
 
     /**
-     * ×ÓÀàÊ¹ÓÃµÄ¿Õ¹¹Ôì·½·¨
+     * å­ç±»ä½¿ç”¨çš„ç©ºæ„é€ æ–¹æ³•
      */
     protected AbstractOwnableSynchronizer() { }
 
     /**
-     * ÅÅËüËøµÄÓµÓĞÕß
+     * æ’å®ƒé”çš„æ‹¥æœ‰è€…
      */
     private transient Thread exclusiveOwnerThread;
 
     /**
-     * ÉèÖÃµ±Ç°ÓµÓĞ¶ÀÕ¼·ÃÎÊÈ¨µÄÏß³Ì¡£²ÎÊı{@code null}±íÊ¾Ã»ÓĞÏß³ÌÓµÓĞ·ÃÎÊÈ¨ÏŞ¡£
-     * ´Ë·½·¨²»Ç¿ÖÆÈÎºÎÍ¬²½»ò{@code volatile}×Ö¶Î·ÃÎÊ¡£@paramÏß³ÌËùÓĞÕßÏß³Ì
+     * è®¾ç½®å½“å‰æ‹¥æœ‰ç‹¬å è®¿é—®æƒçš„çº¿ç¨‹ã€‚å‚æ•°{@code null}è¡¨ç¤ºæ²¡æœ‰çº¿ç¨‹æ‹¥æœ‰è®¿é—®æƒé™ã€‚
+     * æ­¤æ–¹æ³•ä¸å¼ºåˆ¶ä»»ä½•åŒæ­¥æˆ–{@code volatile}å­—æ®µè®¿é—®ã€‚@paramçº¿ç¨‹æ‰€æœ‰è€…çº¿ç¨‹
      * {@code volatile} field accesses.
      * @param thread the owner thread
      */
@@ -70,8 +70,8 @@ public abstract class AbstractOwnableSynchronizer
     }
 
     /**
-     * ·µ»Ø{@code setExclusiveOwnerThread}ÉèÖÃµÄ×îºóÒ»¸öÏß³Ì¼¯£¬
-     * Èç¹ûÃ»ÓĞÉèÖÃÔò·µ»Ø{@code null}¡£@·µ»ØËùÓĞÕßÏß³Ì
+     * è¿”å›{@code setExclusiveOwnerThread}è®¾ç½®çš„æœ€åä¸€ä¸ªçº¿ç¨‹é›†ï¼Œ
+     * å¦‚æœæ²¡æœ‰è®¾ç½®åˆ™è¿”å›{@code null}ã€‚@è¿”å›æ‰€æœ‰è€…çº¿ç¨‹
      * @return the owner thread
      */
     protected final Thread getExclusiveOwnerThread() {

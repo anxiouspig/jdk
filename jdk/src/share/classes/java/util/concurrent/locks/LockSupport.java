@@ -37,26 +37,26 @@ package java.util.concurrent.locks;
 import sun.misc.Unsafe;
 
 /**
- * ������������ͬ����Ļ����߳�����ԭ�
+ * 创建锁和其他同步类的基本线程阻塞原语。
  *
- * �������ʹ������ÿ���̹߳���һ������֤(���ź������������)��
- * ����������֤������park���������أ����ڴ˹��������ĵ���;����������������
- * �����δ�������֤�������unpark��ʹ����֤���á�(���ź�����ͬ������֤�����ۻ������ֻ��һ����)
+ * 这个类与使用它的每个线程关联一个许可证(在信号量类的意义上)。
+ * 如果获得许可证，调用park将立即返回，并在此过程中消耗掉它;否则它可能阻塞。
+ * 如果尚未获得许可证，则调用unpark将使许可证可用。(与信号量不同，许可证不会累积。最多只有一个。)
  *
- * ����park��unpark�ṩ����Ч�������ͷ������̵߳ķ�������Щ���������������·��������̵߳�����
- * s Thread.suspend and Thread.resume:һ���̵߳���park����һ���߳�unpark�������̻߳��ԣ�
- * ��������֤�����⣬��������ߵ��̱߳��жϣ�park�����أ�����֧�ֳ�ʱ�汾��
- * park����Ҳ�������κ�����ʱ�䷵�أ���Ϊ��û��ԭ�򡱣�����ͨ�������ڷ���ʱ��ѭ�������¼��������
- * ����������ϣ�park��Ϊһ������æ�ĵȴ������Ż������˷�̫���ʱ����ת�����������unpark����Ч�ġ�
+ * 方法park和unpark提供了有效的阻塞和非阻塞线程的方法，这些方法不会遇到导致废弃方法线程的问题
+ * s Thread.suspend and Thread.resume:一个线程调用park和另一个线程unpark将保持线程活性，
+ * 由于许可证。另外，如果调用者的线程被中断，park将返回，并且支持超时版本。
+ * park方法也可以在任何其他时间返回，因为“没有原因”，所以通常必须在返回时在循环中重新检查条件。
+ * 在这个意义上，park作为一个“繁忙的等待”的优化，不浪费太多的时间旋转，但必须配合unpark是有效的。
  *
- * park��������ʽҲ��֧��blocker�������������������̱߳�����ʱ���м�¼��
- * ���������Ӻ���Ϲ���ʶ���̱߳�������ԭ��(��Щ���߿��ܻ�ʹ��getBlocker(Thread)����������������)
- * ǿ�ҽ���ʹ����Щ����������û�д˲�����ԭʼ����������ʵ������Ϊ�������ṩ�����������������ġ�
+ * park的三种形式也都支持blocker对象参数。这个对象在线程被阻塞时进行记录，
+ * 以允许监视和诊断工具识别线程被阻塞的原因。(这些工具可能会使用getBlocker(Thread)方法访问阻塞程序。)
+ * 强烈建议使用这些表单而不是没有此参数的原始表单。在锁实现中作为阻塞器提供的正常参数是这样的。
  *
  *  <pre> {@code
  * while (!canProceed()) { ... LockSupport.park(this); }}</pre>
  *
- * �ڵ���park֮ǰ���Ȳ��ܼ���������Ҳ����ִ���κ������������Ӷ�������������������Ϊÿ���߳�ֻ��һ������֤.
+ * 在调用park之前，既不能继续操作，也不能执行任何其他操作，从而导致锁定或阻塞。因为每个线程只有一个许可证.
  *
  * <p><b>Sample Usage.</b> Here is a sketch of a first-in-first-out
  * non-reentrant lock class:
@@ -93,17 +93,17 @@ import sun.misc.Unsafe;
 public class LockSupport {
     private LockSupport() {} // Cannot be instantiated.
 
-    // �÷�������Thread��Ԥ���ֶΣ���ϵĶ���
+    // 用反射设置Thread的预留字段，阻断的对象
     private static void setBlocker(Thread t, Object arg) {
         // Even though volatile, hotspot doesn't need a write barrier here.
         UNSAFE.putObject(t, parkBlockerOffset, arg);
     }
 
     /**
-     * �ṩ�����̵߳�����֤(�������û�п���)������߳���park�ϱ���������ô����������
-     * ����������һ������park�Ǳ�֤�����������û�������������̣߳����ܱ�֤�˲������κ�Ч����
+     * 提供给定线程的许可证(如果它还没有可用)。如果线程在park上被阻塞，那么它将解锁。
+     * 否则，它的下一个调用park是保证不阻塞。如果没有启动给定的线程，则不能保证此操作有任何效果。
      *
-     * @param thread Ҫunpark���̣߳���null������������£��˲�����Ч
+     * @param thread 要unpark的线程，或null，在这种情况下，此操作无效
      */
     public static void unpark(Thread thread) {
         if (thread != null)
@@ -111,22 +111,22 @@ public class LockSupport {
     }
 
     /**
-     * Ϊ�̵߳��ȵ�Ŀ�Ľ��õ�ǰ�̣߳���������֤���á�
+     * 为线程调度的目的禁用当前线程，除非许可证可用。
      *
-     * <p>�������֤���ã���ʹ������֤����������;���򣬵�ǰ�߳̽������̵߳��ȵ�Ŀ�Ķ������ã�����������״̬��ֱ�����������������֮һ:
+     * <p>如果许可证可用，则使用许可证并立即返回;否则，当前线程将出于线程调度的目的而被禁用，并处于休眠状态，直到发生以下三种情况之一:
      *
      * <ul>
-     * <li>����һЩ�߳��Ե�ǰ�߳�ΪĿ�����unpark;
+     * <li>其他一些线程以当前线程为目标调用unpark;
      *
-     * <li>����һЩ�߳��жϵ�ǰ�߳�;
+     * <li>其他一些线程中断当前线程;
      *
-     * <li>��ٵĵ���(Ҳ����˵��û���κ�����)���ء�
+     * <li>虚假的调用(也就是说，没有任何理由)返回。
      * </ul>
      *
-     * <p>�˷�������������Щԭ���¸÷������ء�������Ӧ�����¼�鵼���߳�����ֹͣ��������
-     * ���磬�����߻�����ȷ���̷߳���ʱ���ж�״̬��
+     * <p>此方法不报告是哪些原因导致该方法返回。呼叫者应该重新检查导致线程首先停止的条件。
+     * 例如，调用者还可以确定线程返回时的中断状态。
      *
-     * @param blocker ������߳�ֹͣ��ͬ������
+     * @param blocker 负责此线程停止的同步对象
      * @since 1.6
      */
     public static void park(Object blocker) {
@@ -137,26 +137,26 @@ public class LockSupport {
     }
 
     /**
-     * ����������֤��������ָ���ĵȴ�ʱ���ڣ���ֹ��ǰ�߳������̵߳��ȡ�
+     * 除非有许可证，否则在指定的等待时间内，禁止当前线程用于线程调度。
      *
-     * <p>�������֤���ã���ʹ������֤����������;���򣬵�ǰ�߳̽������̵߳��ȵ�Ŀ�Ķ������ã�
-     * ����������״̬��ֱ�����������������֮һ:
+     * <p>如果许可证可用，则使用许可证并立即返回;否则，当前线程将出于线程调度的目的而被禁用，
+     * 并处于休眠状态，直到发生以下四种情况之一:
      *
      * <ul>
-     * <li>����һЩ�߳��Ե�ǰ�߳�ΪĿ�����unpark;
+     * <li>其他一些线程以当前线程为目标调用unpark;
      *
-     * <li>����һЩ�߳��жϵ�ǰ�߳�;
+     * <li>其他一些线程中断当前线程;
      *
-     * <li>ָ���ĵȺ�ʱ���ѹ�;
+     * <li>指定的等候时间已过;
      *
-     * <li>��ٵĵ���(Ҳ����˵��û���κ�����)���ء�
+     * <li>虚假的调用(也就是说，没有任何理由)返回。
      * </ul>
      *
-     * <p>�˷�������������Щԭ���¸÷������ء�������Ӧ�����¼�鵼���߳�����ֹͣ��������
-     * ���磬�����߻�����ȷ���̵߳��ж�״̬�򷵻�ʱ������ʱ�䡣
+     * <p>此方法不报告是哪些原因导致该方法返回。呼叫者应该重新检查导致线程首先停止的条件。
+     * 例如，调用者还可以确定线程的中断状态或返回时的运行时间。
      *
-     * @param blocker ������߳�ֹͣ��ͬ������
-     * @param nanos �ȴ������������
+     * @param blocker 负责此线程停止的同步对象
+     * @param nanos 等待的最大纳秒数
      * @since 1.6
      */
     public static void parkNanos(Object blocker, long nanos) {
@@ -169,26 +169,26 @@ public class LockSupport {
     }
 
     /**
-     * Ϊ���̵߳��ȵ�Ŀ�ģ���ָ���Ľ�ֹ����֮ǰ���õ�ǰ�̣߳���������֤���á�
+     * 为了线程调度的目的，在指定的截止日期之前禁用当前线程，除非许可证可用。
      *
-     * <p>�������֤���ã���ʹ������֤����������;
-     * ���򣬵�ǰ�߳̽������̵߳��ȵ�Ŀ�Ķ������ã�����������״̬��ֱ�����������������֮һ:
+     * <p>如果许可证可用，则使用许可证并立即返回;
+     * 否则，当前线程将出于线程调度的目的而被禁用，并处于休眠状态，直到发生以下四种情况之一:
      *
      * <ul>
-     * <li>����һЩ�߳��Ե�ǰ�߳�ΪĿ�����unpark
+     * <li>其他一些线程以当前线程为目标调用unpark
      *
-     * <li>����һЩ�߳��жϵ�ǰ�߳�;
+     * <li>其他一些线程中断当前线程;
      *
-     * <li>����ָ������;
+     * <li>超过指定期限;
      *
-     * <li>��ٵĵ���(Ҳ����˵��û���κ�����)���ء�
+     * <li>虚假的调用(也就是说，没有任何理由)返回。
      * </ul>
      *
-     * <p>�˷�������������Щԭ���¸÷������ء�������Ӧ�����¼�鵼���߳�����ֹͣ��������
-     * ���磬�����߻�����ȷ���̵߳��ж�״̬���򷵻�ʱ�ĵ�ǰʱ�䡣
+     * <p>此方法不报告是哪些原因导致该方法返回。呼叫者应该重新检查导致线程首先停止的条件。
+     * 例如，调用者还可以确定线程的中断状态，或返回时的当前时间。
      *
-     * @param blocker ������߳�ֹͣ��ͬ������
-     * @param deadline �ȴ�ʱ��ľ���ʱ��(�Ժ���Ϊ��λ)
+     * @param blocker 负责此线程停止的同步对象
+     * @param deadline 等待时间的绝对时间(以毫秒为单位)
      * @since 1.6
      */
     public static void parkUntil(Object blocker, long deadline) {
@@ -199,8 +199,8 @@ public class LockSupport {
     }
 
     /**
-     * �����ṩ��park���������һ�ε��õ�blocker���󣬸÷�����δ��������������δ���������򷵻�null��
-     * ���ص�ֵֻ��һ��˲ʱ���ա����߳̿����ڲ�ͬ��blocker�����Ͻ����������������
+     * 返回提供给park方法的最近一次调用的blocker对象，该方法尚未被解除阻塞，如果未被阻塞，则返回null。
+     * 返回的值只是一个瞬时快照——线程可能在不同的blocker对象上解除了阻塞或阻塞。
      *
      * @param t the thread
      * @return the blocker
@@ -214,22 +214,22 @@ public class LockSupport {
     }
 
     /**
-     * Ϊ�̵߳��ȵ�Ŀ�Ľ��õ�ǰ�̣߳���������֤���á�
+     * 为线程调度的目的禁用当前线程，除非许可证可用。
      *
-     * <p>�������֤���ã���ʹ������֤����������;���򣬵�ǰ�߳̽������̵߳��ȵ�Ŀ�Ķ������ã�
-     * ����������״̬��ֱ�����������������֮һ:
+     * <p>如果许可证可用，则使用许可证并立即返回;否则，当前线程将出于线程调度的目的而被禁用，
+     * 并处于休眠状态，直到发生以下三种情况之一:
      *
      * <ul>
      *
-     * <li>����һЩ�߳��Ե�ǰ�߳�ΪĿ�����unpark;
+     * <li>其他一些线程以当前线程为目标调用unpark;
      *
-     * <li>����һЩ�߳��жϵ�ǰ�߳�;
+     * <li>其他一些线程中断当前线程;
      *
-     * <li>��ٵĵ���(Ҳ����˵��û���κ�����)���ء�
+     * <li>虚假的调用(也就是说，没有任何理由)返回。
      * </ul>
      *
-     * <p>�˷�������������Щԭ���¸÷������ء�������Ӧ�����¼�鵼���߳�����ֹͣ��������
-     * ���磬�����߻�����ȷ���̷߳���ʱ���ж�״̬��
+     * <p>此方法不报告是哪些原因导致该方法返回。呼叫者应该重新检查导致线程首先停止的条件。
+     * 例如，调用者还可以确定线程返回时的中断状态。
      */
     public static void park() {
         UNSAFE.park(false, 0L);
@@ -270,23 +270,23 @@ public class LockSupport {
     }
 
     /**
-     * Ϊ���̵߳��ȵ�Ŀ�ģ���ָ���Ľ�ֹ����֮ǰ���õ�ǰ�̣߳���������֤���á�
+     * 为了线程调度的目的，在指定的截止日期之前禁用当前线程，除非许可证可用。
      *
-     * <p>�������֤���ã���ʹ������֤����������;���򣬵�ǰ�߳̽������̵߳��ȵ�Ŀ�Ķ������ã�
-     * ����������״̬��ֱ�����������������֮һ:
+     * <p>如果许可证可用，则使用许可证并立即返回;否则，当前线程将出于线程调度的目的而被禁用，
+     * 并处于休眠状态，直到发生以下四种情况之一:
      *
      * <ul>
-     * <li>����һЩ�߳��Ե�ǰ�߳�ΪĿ�����unpark;
+     * <li>其他一些线程以当前线程为目标调用unpark;
      *
-     * <li>����һЩ�߳��жϵ�ǰ�߳�;
+     * <li>其他一些线程中断当前线程;
      *
-     * <li>����ָ������;
+     * <li>超过指定期限;
      *
      * <li>The call spuriously (that is, for no reason) returns.
      * </ul>
      *
-     * <p>�˷�������������Щԭ���¸÷������ء�������Ӧ�����¼�鵼���߳�����ֹͣ��������
-     * ���磬�����߻�����ȷ���̵߳��ж�״̬���򷵻�ʱ�ĵ�ǰʱ�䡣
+     * <p>此方法不报告是哪些原因导致该方法返回。呼叫者应该重新检查导致线程首先停止的条件。
+     * 例如，调用者还可以确定线程的中断状态，或返回时的当前时间。
      *
      * @param deadline the absolute time, in milliseconds from the Epoch,
      *        to wait until
@@ -296,7 +296,7 @@ public class LockSupport {
     }
 
     /**
-     * ����α�����ʼ������µĸ������ӡ����ڰ��������ƣ���ThreadLocalRandom���ơ�
+     * 返回伪随机初始化或更新的辅助种子。由于包访问限制，从ThreadLocalRandom复制。
      */
     static final int nextSecondarySeed() {
         int r;
