@@ -179,36 +179,36 @@ import java.util.Date;
 public interface Condition {
 
     /**
-     * ���µ�ǰ�̵߳ȴ���ֱ�������źŻ�{@linkplain Thread #interrupt interrupted}��
+     * 导致当前线程等待，直到发出信号或{@linkplain Thread #interrupt interrupted}。
      *
-     * <p>���{@code����}����������ԭ���ͷţ���ǰ�̳߳����̵߳��ȵ�Ŀ�ı����ã�
-     * ����������״̬��ֱ�����������������֮һ<em>one</em>:
+     * <p>与此{@code条件}关联的锁被原子释放，当前线程出于线程调度的目的被禁用，
+     * 并处于休眠状态，直到发生以下四种情况之一<em>one</em>:
      * <ul>
-     * <li>����һЩ�߳�Ϊ���{@code����}����{@link #signal}��������ǰ�̱߳�ѡ��ΪҪ���ѵ��߳�;
-     * <li>����һЩ�̵߳���{@link #signalAll}�������������{@code����};
-     * <li>�����߳�{@linkplain Thread #interrupt interrupts}��ǰ�̣߳�֧���ж��߳���ͣ;
-     * <li>һ����< em >��ٻ���< / em >��������
+     * <li>其他一些线程为这个{@code条件}调用{@link #signal}方法，当前线程被选择为要唤醒的线程;
+     * <li>其他一些线程调用{@link #signalAll}方法来处理这个{@code条件};
+     * <li>其他线程{@linkplain Thread #interrupt interrupts}当前线程，支持中断线程暂停;
+     * <li>一个“< em >虚假唤醒< / em >“发生。
      * </ul>
      *
-     * <p>����������£��ڴ˷�������֮ǰ����ǰ�̱߳������»�ȡ�����������������
-     * ���̷߳���ʱ��<em>��֤</em>�����������
+     * <p>在所有情况下，在此方法返回之前，当前线程必须重新获取与此条件关联的锁。
+     * 当线程返回时，<em>保证</em>持有这个锁。
      *
-     * <p>�����ǰ�̣߳�
+     * <p>如果当前线程：
      * <ul>
-     * <li>�ڽ���˷���ʱ���������ж�״̬;
-     * <li>�Ƿ�֧��{@linkplain Thread#interrupt}�ڵȴ����ж��߳���ͣʱ��
+     * <li>在进入此方法时已设置其中断状态;
+     * <li>是否支持{@linkplain Thread#interrupt}在等待和中断线程暂停时，
      * </ul>
-     * Ȼ���׳�{@link InterruptedException}���������ǰ�̵߳��ж�״̬��
-     * �ڵ�һ������£�û��ָ���Ƿ����ͷ���֮ǰ�����жϲ��ԡ�
+     * 然后抛出{@link InterruptedException}，并清除当前线程的中断状态。
+     * 在第一种情况下，没有指定是否在释放锁之前进行中断测试。
      *
      * <p><b>Implementation Considerations</b>
      *
-     * <p>�ٶ���ǰ�߳��ڵ��ô˷���ʱ�������{@code����}������������ʵ����ȷ������Ƿ���ˣ�
-     * ������ǣ��������Ӧ��ͨ�������׳�һ���쳣(����{@link IllegalMonitorStateException})��
-     * ʵ�ֱ����¼�����ʵ��
+     * <p>假定当前线程在调用此方法时持有与此{@code条件}关联的锁。由实现来确定情况是否如此，
+     * 如果不是，则如何响应。通常，会抛出一个异常(例如{@link IllegalMonitorStateException})，
+     * 实现必须记录这个事实。
      *
-     * <p>ʵ�ֿ��ܸ���������Ӧ�жϣ���������Ӧ�źŵ������������ء�
-     * ����������£�ʵ�ֱ���ȷ���źű��ض�����һ���ȴ����߳�(����еĻ�)��
+     * <p>实现可能更倾向于响应中断，而不是响应信号的正常方法返回。
+     * 在这种情况下，实现必须确保信号被重定向到另一个等待的线程(如果有的话)。
      *
      * @throws InterruptedException if the current thread is interrupted
      *         (and interruption of thread suspension is supported)
@@ -216,50 +216,50 @@ public interface Condition {
     void await() throws InterruptedException;
 
     /**
-     * ���µ�ǰ�̵߳ȴ���ֱ������֪ͨ��
+     * 导致当前线程等待，直到它被通知。
      *
-     * <p>���������ص�����ԭ���ͷţ���ǰ�̳߳����̵߳��ȵ�Ŀ�ı����ã�����������״̬��
-     * ֱ�����������������֮һ<em>one</em>:
+     * <p>与此条件相关的锁被原子释放，当前线程出于线程调度的目的被禁用，并处于休眠状态，
+     * 直到发生以下三种情况之一<em>one</em>:
      * <ul>
-     * <li>����һЩ�߳�Ϊ���{@code����}����{@link #signal}��������ǰ�̱߳�ѡ��ΪҪ���ѵ��߳�;
-     * <li>S����һЩ�̵߳���{@link #signalAll}�������������{@code����};
-     * <li>һ����< em >��ٻ���< / em >��������
+     * <li>其他一些线程为这个{@code条件}调用{@link #signal}方法，当前线程被选择为要唤醒的线程;
+     * <li>S其他一些线程调用{@link #signalAll}方法来处理这个{@code条件};
+     * <li>一个“< em >虚假唤醒< / em >“发生。
      * </ul>
      *
-     * <p>����������£��ڴ˷�������֮ǰ����ǰ�̱߳������»�ȡ�����������������
-     * ���̷߳���ʱ��<em>��֤</em>�����������
+     * <p>在所有情况下，在此方法返回之前，当前线程必须重新获取与此条件关联的锁。
+     * 当线程返回时，<em>保证</em>持有这个锁。
      *
-     * <p>�����ǰ�̵߳��ж�״̬�����������������ʱ���õģ���������{@linkplain Thread #interrupt interrupted}��
-     * ��ô�ڵȴ�ʱ�����������ȴ���ֱ�������źš��������մ������������ʱ�������ж�״̬��Ȼ�ᱻ���á�
+     * <p>如果当前线程的中断状态是在它进入这个方法时设置的，或者它是{@linkplain Thread #interrupt interrupted}，
+     * 那么在等待时，它将继续等待，直到发出信号。当它最终从这个方法返回时，它的中断状态仍然会被设置。
      *
      * <p><b>Implementation Considerations</b>
      *
-     * <p>�ٶ���ǰ�߳��ڵ��ô˷���ʱ�������{@code����}������������ʵ����ȷ������Ƿ���ˣ�������ǣ��������Ӧ��
-     * ͨ�������׳�һ���쳣(����{@link IllegalMonitorStateException})��ʵ�ֱ����¼�����ʵ��
+     * <p>假定当前线程在调用此方法时持有与此{@code条件}关联的锁。由实现来确定情况是否如此，如果不是，则如何响应。
+     * 通常，会抛出一个异常(例如{@link IllegalMonitorStateException})，实现必须记录这个事实。
      */
     void awaitUninterruptibly();
 
     /**
-     * ���µ�ǰ�̵߳ȴ���ֱ�������źŻ��ж�������ָ���ĵȴ�ʱ����ڡ�
+     * 导致当前线程等待，直到发出信号或中断它，或指定的等待时间过期。
      *
-     * <p>���������ص�����ԭ���ͷţ���ǰ�̳߳����̵߳��ȵ�Ŀ�ı����ã�����������״̬��ֱ��������������е�һ��<em> </em>:
+     * <p>与此条件相关的锁被原子释放，当前线程出于线程调度的目的被禁用，并处于休眠状态，直到发生五件事情中的一件<em> </em>:
      * <ul>
-     * <li>����һЩ�߳�Ϊ���{@code����}����{@link #signal}��������ǰ�̱߳�ѡ��ΪҪ���ѵ��߳�;
-     * <li>����һЩ�̵߳���{@link #signalAll}�������������{@code����};
-     * <li>�����߳�{@linkplain thread #interrupt interrupts}��ǰ�̣߳�֧���ж��߳���ͣ;��<li>ָ���ĵȴ�ʱ���ѹ�;
-     * <li>һ����< em >��ٻ���< / em >��������
+     * <li>其他一些线程为这个{@code条件}调用{@link #signal}方法，当前线程被选择为要唤醒的线程;
+     * <li>其他一些线程调用{@link #signalAll}方法来处理这个{@code条件};
+     * <li>其他线程{@linkplain thread #interrupt interrupts}当前线程，支持中断线程暂停;或<li>指定的等待时间已过;
+     * <li>一个“< em >虚假唤醒< / em >“发生。
      * </ul>
      *
-     * <p>����������£��ڴ˷�������֮ǰ����ǰ�̱߳������»�ȡ��������������������̷߳���ʱ��<em>��֤</em>�����������
+     * <p>在所有情况下，在此方法返回之前，当前线程必须重新获取与此条件关联的锁。当线程返回时，<em>保证</em>持有这个锁。
      *
-     * <p>�����ǰ�߳�:
+     * <p>如果当前线程:
      * <ul>
-     * <li>�ڽ���˷���ʱ���������ж�״̬;��
-     * <li>Ϊ{@linkplain Thread#interrupt}���ڵȴ�ʱ��֧���ж��߳���ͣ��
+     * <li>在进入此方法时已设置其中断状态;或
+     * <li>为{@linkplain Thread#interrupt}，在等待时，支持中断线程暂停，
      * </ul>
-     * Ȼ���׳�{@link InterruptedException}���������ǰ�̵߳��ж�״̬���ڵ�һ������£�û��ָ���Ƿ����ͷ���֮ǰ�����жϲ��ԡ�
+     * 然后抛出{@link InterruptedException}，并清除当前线程的中断状态。在第一种情况下，没有指定是否在释放锁之前进行中断测试。
      *
-     * <p>�÷������ݷ���ʱ�ṩ��{@code nanosTimeout}ֵ����ʣ��ȴ����������Ĺ���ֵ�������ʱ���򷵻�С�ڻ�������ֵ����ֵ������ȷ���ڵȴ����ص��ȴ�������Ȼ��Ч��������Ƿ���Ҫ���µȴ����Լ���Ҫ�೤ʱ�����µȴ������ַ����ĵ�����;����:
+     * <p>该方法根据返回时提供的{@code nanosTimeout}值返回剩余等待的纳秒数的估计值，如果超时，则返回小于或等于零的值。此值可用于确定在等待返回但等待条件仍然无效的情况下是否需要重新等待，以及需要多长时间重新等待。这种方法的典型用途如下:
      *
      *  <pre> {@code
      * boolean aMethod(long timeout, TimeUnit unit) {
@@ -277,13 +277,13 @@ public interface Condition {
      *   }
      * }}</pre>
      *
-     * <p>���˵��:���������Ҫһ������������Ա����ڱ���ʣ��ʱ��ʱ���ֽضϴ������־�����ʧ��ʹ����Ա����ȷ���ܵȴ�ʱ�䲻������µȴ�ʱָ����ϵͳʱ��̡�
+     * <p>设计说明:这个方法需要一个纳秒参数，以避免在报告剩余时间时出现截断错误。这种精度损失将使程序员难以确保总等待时间不会比重新等待时指定的系统时间短。
      *
      * <p><b>Implementation Considerations</b>
      *
-     * <p>�ٶ���ǰ�߳��ڵ��ô˷���ʱ�������{@code����}������������ʵ����ȷ������Ƿ���ˣ�������ǣ��������Ӧ��ͨ�������׳�һ���쳣(����{@link IllegalMonitorStateException})��ʵ�ֱ����¼�����ʵ��
+     * <p>假定当前线程在调用此方法时持有与此{@code条件}关联的锁。由实现来确定情况是否如此，如果不是，则如何响应。通常，会抛出一个异常(例如{@link IllegalMonitorStateException})，实现必须记录这个事实。
      *
-     * <p>ʵ�ֿ��ܸ���������Ӧ�ж϶�������Ӧ�źŵ������������أ����߸�������ָʾָ���ȴ�ʱ������š�������������£�ʵ�ֶ�����ȷ���źű��ض�����һ���ȴ����߳�(����еĻ�)��
+     * <p>实现可能更倾向于响应中断而不是响应信号的正常方法返回，或者更倾向于指示指定等待时间的流逝。在这两种情况下，实现都必须确保信号被重定向到另一个等待的线程(如果有的话)。
      *
      * @param nanosTimeout the maximum time to wait, in nanoseconds
      * @return an estimate of the {@code nanosTimeout} value minus
@@ -298,7 +298,7 @@ public interface Condition {
     long awaitNanos(long nanosTimeout) throws InterruptedException;
 
     /**
-     * ���µ�ǰ�̵߳ȴ���ֱ�������źŻ��ж�������ָ���ĵȴ�ʱ����ڡ������������Ϊ�ϵȼ���:
+     * 导致当前线程等待，直到发出信号或中断它，或指定的等待时间过期。这个方法在行为上等价于:
      *  <pre> {@code awaitNanos(unit.toNanos(time)) > 0}</pre>
      *
      * @param time the maximum time to wait
@@ -311,30 +311,30 @@ public interface Condition {
     boolean await(long time, TimeUnit unit) throws InterruptedException;
 
     /**
-     * ���µ�ǰ�̵߳ȴ���ֱ�������źŻ��ж�������ָ���Ľ�ֹ���ڹ��ڡ�
+     * 导致当前线程等待，直到发出信号或中断它，或指定的截止日期过期。
      *
-     * <p>���������ص�����ԭ���ͷţ���ǰ�̳߳����̵߳��ȵ�Ŀ�ı����ã�����������״̬��
-     * ֱ��������������е�һ��<em> </em>:
+     * <p>与此条件相关的锁被原子释放，当前线程出于线程调度的目的被禁用，并处于休眠状态，
+     * 直到发生五件事情中的一件<em> </em>:
      * <ul>
-     * <li>����һЩ�߳�Ϊ���{@code����}����{@link #signal}��������ǰ�̱߳�ѡ��ΪҪ���ѵ��߳�;
-     * <li>����һЩ�̵߳���{@link #signalAll}�������������{@code����};
-     * <li>�����߳�{@linkplain thread #interrupt interrupts}��ǰ�̣߳�֧���ж��߳���ͣ;��<li>ָ�������ѹ�;
+     * <li>其他一些线程为这个{@code条件}调用{@link #signal}方法，当前线程被选择为要唤醒的线程;
+     * <li>其他一些线程调用{@link #signalAll}方法来处理这个{@code条件};
+     * <li>其他线程{@linkplain thread #interrupt interrupts}当前线程，支持中断线程暂停;或<li>指定期限已过;
      * <li>A &quot;<em>spurious wakeup</em>&quot; occurs.
      * </ul>
      *
-     * <p>����������£��ڴ˷�������֮ǰ����ǰ�̱߳������»�ȡ�����������������
-     * ���̷߳���ʱ��<em>��֤</em>�����������
+     * <p>在所有情况下，在此方法返回之前，当前线程必须重新获取与此条件关联的锁。
+     * 当线程返回时，<em>保证</em>持有这个锁。
      *
      *
-     * <p>�����ǰ�߳�:
+     * <p>如果当前线程:
      * <ul>
-     * <li>�ڽ���˷���ʱ���������ж�״̬;��
-     * <li>Ϊ{@linkplain Thread#interrupt}���ڵȴ�ʱ��֧���ж��߳���ͣ��
+     * <li>在进入此方法时已设置其中断状态;或
+     * <li>为{@linkplain Thread#interrupt}，在等待时，支持中断线程暂停，
      * </ul>
-     * Ȼ���׳�{@link InterruptedException}���������ǰ�̵߳��ж�״̬���ڵ�һ������£�û��ָ���Ƿ����ͷ���֮ǰ�����жϲ��ԡ�
+     * 然后抛出{@link InterruptedException}，并清除当前线程的中断状态。在第一种情况下，没有指定是否在释放锁之前进行中断测试。
      *
      *
-     * <p>����ֵָʾ��ֹ�����Ƿ��Ѿ����ˣ����÷�����
+     * <p>返回值指示截止日期是否已经过了，其用法如下
      *  <pre> {@code
      * boolean aMethod(Date deadline) {
      *   boolean stillWaiting = true;
@@ -353,13 +353,13 @@ public interface Condition {
      *
      * <p><b>Implementation Considerations</b>
      *
-     * <p>�ٶ���ǰ�߳��ڵ��ô˷���ʱ�������{@code����}����������
-     * ��ʵ����ȷ������Ƿ���ˣ�������ǣ��������Ӧ��ͨ�������׳�һ���쳣(����
-     * {@link IllegalMonitorStateException})��ʵ�ֱ����¼�����ʵ��
+     * <p>假定当前线程在调用此方法时持有与此{@code条件}关联的锁。
+     * 由实现来确定情况是否如此，如果不是，则如何响应。通常，会抛出一个异常(例如
+     * {@link IllegalMonitorStateException})，实现必须记录这个事实。
      *
-     * <p>ʵ�ֿ��ܸ���������Ӧ�ж϶�������Ӧ�źŵ������������أ�
-     * ���߸�������ָʾָ���Ľ�ֹ���ڵ�ͨ����������������£�
-     * ʵ�ֶ�����ȷ���źű��ض�����һ���ȴ����߳�(����еĻ�)��
+     * <p>实现可能更倾向于响应中断而不是响应信号的正常方法返回，
+     * 或者更倾向于指示指定的截止日期的通过。在这两种情况下，
+     * 实现都必须确保信号被重定向到另一个等待的线程(如果有的话)。
      *
      * @param deadline the absolute time to wait until
      * @return {@code false} if the deadline has elapsed upon return, else
@@ -370,29 +370,29 @@ public interface Condition {
     boolean awaitUntil(Date deadline) throws InterruptedException;
 
     /**
-     * ����һ�����ڵȴ����̡߳�
+     * 唤醒一个正在等待的线程。
      *
-     * <p>������κ��߳��ڴ������µȴ�����ѡ��һ���߳̽��л��ѡ�
-     * Ȼ�󣬸��̱߳����ڴ�{@code await}����֮ǰ���»�ȡ����
+     * <p>如果有任何线程在此条件下等待，则选择一个线程进行唤醒。
+     * 然后，该线程必须在从{@code await}返回之前重新获取锁。
      *
      * <p><b>Implementation Considerations</b>
      *
-     * <p>ʵ�ֿ���(ͨ��������)Ҫ��ǰ�߳��ڵ��ô˷���ʱ�������{@code����}����������
-     * ʵ�ֱ����¼��ǰ����������δ������ʱ����ȡ���κβ�����ͨ�����׳�һ���쳣������
-     * {@link IllegalMonitorStateException}��
+     * <p>实现可能(通常是这样)要求当前线程在调用此方法时持有与此{@code条件}关联的锁。
+     * 实现必须记录此前提条件和在未持有锁时所采取的任何操作。通常会抛出一个异常，比如
+     * {@link IllegalMonitorStateException}。
      */
     void signal();
 
     /**
-     * �������еȴ����̡߳�
+     * 唤醒所有等待的线程。
      *
-     * <p>������κ��߳��ڴ������µȴ�����ô���Ƕ��������ѡ�ÿ���߳��ڴ�{@code await}����֮ǰ�������»�ȡ����
+     * <p>如果有任何线程在此条件下等待，那么它们都将被唤醒。每个线程在从{@code await}返回之前必须重新获取锁。
      *
      * <p><b>Implementation Considerations</b>
      *
-     * <p>ʵ�ֿ���(ͨ��������)Ҫ��ǰ�߳��ڵ��ô˷���ʱ�������{@code����}����������
-     * ʵ�ֱ����¼��ǰ����������δ������ʱ����ȡ���κβ�����ͨ�����׳�һ���쳣������
-     * {@link IllegalMonitorStateException}��
+     * <p>实现可能(通常是这样)要求当前线程在调用此方法时持有与此{@code条件}关联的锁。
+     * 实现必须记录此前提条件和在未持有锁时所采取的任何操作。通常会抛出一个异常，比如
+     * {@link IllegalMonitorStateException}。
      */
     void signalAll();
 }
